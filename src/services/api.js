@@ -1,34 +1,36 @@
 import axios from 'axios';
 
-const API_URL = 'https://hmapi.somee.com/api';
-
 const api = axios.create({
-  baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
+    baseURL: 'https://hmapi.somee.com/api',
+    headers: {
+        'Content-Type': 'application/json'
+    }
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
 });
 
-export const login = (email, password) =>
-  api.post('/auth/login', { email, password });
-
-export const register = (email, password) =>
-  api.post('/auth/register', { email, password });
-
-export const inviteViewer = (email, adminId) =>
-  api.post('/auth/invite', { email, adminId });
-
-export const getMilk = () => api.get('/milk');
-export const createMilk = (milkData) => api.post('/milk', milkData);
-export const getBills = () => api.get('/bills');
-export const createBill = (billData) => api.post('/bills', billData);
-export const getRent = () => api.get('/rent');
-export const createRent = (rentData) => api.post('/rent', rentData);
-
-export default api;
+export const login = (data) => api.post('/auth/login', data);
+export const register = (data) => api.post('/auth/register', data);
+export const inviteViewer = (email, fullName, adminId, recordName, recordType) =>
+    api.post('/auth/invite', { email, fullName, adminId, recordName, recordType });
+export const revokeViewer = (viewerId, recordName, recordType) =>
+    api.post('/auth/revoke', { viewerId, recordName, recordType });
+export const getRecords = () => api.get('/record');
+export const createRecord = (record) => api.post('/record', record);
+export const getMilk = (recordId) => api.get(`/milk/${recordId}`);
+export const createMilk = (milk) => api.post('/milk', milk);
+export const getBills = (recordId) => api.get(`/bills/${recordId}`);
+export const createBill = (bill) => api.post('/bills', bill);
+export const getRent = (recordId) => api.get(`/rent/${recordId}`);
+export const createRent = (rent) => api.post('/rent', rent);
+export const getMilkAnalytics = (recordId, month) => api.get(`/milk/analytics/${recordId}?month=${month}`);
+export const getBillsAnalytics = (recordId, month) => api.get(`/bills/analytics/${recordId}?month=${month}`);
+export const getRentAnalytics = (recordId, month) => api.get(`/rent/analytics/${recordId}?month=${month}`);
+export const getSettings = () => api.get('/settings');
+export const updateSettings = (settings) => api.post('/settings', settings);

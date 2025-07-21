@@ -18,6 +18,7 @@ import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,12 +33,12 @@ function Layout({ user, onLogout, children }) {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <HomeIcon />, path: '/dashboard' },
-    { text: 'Milk', icon: <LocalDrinkIcon />, path: '/dashboard' },
-    { text: 'Bills', icon: <ReceiptIcon />, path: '/dashboard' },
-    { text: 'Rent', icon: <ApartmentIcon />, path: '/dashboard' },
+    { text: 'Records', icon: <HomeIcon />, path: '/records' },
     ...(user.role === 'Admin'
-      ? [{ text: 'Invite Viewer', icon: <PersonAddIcon />, path: '/invite' }]
+      ? [
+          { text: 'Invite Viewer', icon: <PersonAddIcon />, path: '/invite' },
+          { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+        ]
       : []),
   ];
 
@@ -79,8 +80,8 @@ function Layout({ user, onLogout, children }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
-            XTHomeManager
+          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+            XTHomeManager - {user.email} ({user.role})
           </Typography>
         </Toolbar>
       </AppBar>
