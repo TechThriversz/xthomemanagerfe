@@ -1,292 +1,89 @@
 import { useState, useEffect } from 'react';
 import {
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Box,
+  Typography, Table, TableBody, TableCell, TableHead, TableRow,
+  Select, MenuItem, Box, Alert
 } from '@mui/material';
-import { getMilk, createMilk, getBills, createBill, getRent, createRent } from '../services/api';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { format, startOfMonth } from 'date-fns';
+import { getRecords, getMilkAnalytics } from '../services/api';
 
-function Dashboard({ user }) {
-  const [milkData, setMilkData] = useState([]);
-  const [billData, setBillData] = useState([]);
-  const [rentData, setRentData] = useState([]);
-  const [milkForm, setMilkForm] = useState({ quantity: '', date: '' });
-  const [billForm, setBillForm] = useState({ amount: '', description: '' });
-  const [rentForm, setRentForm] = useState({ amount: '', month: '' });
+function DashboardPage({ user }) {
+  const [records, setRecords] = useState([]);
+  const [analytics, setAnalytics] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(startOfMonth(new Date()));
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchData();
+    fetchRecords();
   }, []);
 
-  const fetchData = async () => {
+  useEffect(() => {
+    if (records.length > 0) fetchAnalytics();
+  }, [records, selectedMonth]);
+
+  const fetchRecords = async () => {
     try {
-      const [milkRes, billRes, rentRes] = await Promise.all([
-        getMilk(),
-        getBills(),
-        getRent(),
-      ]);
-      setMilkData(milkRes.data);
-      setBillData(billRes.data);
-      setRentData(rentRes.data);
+      const res = await getRecords();
+      setRecords(res.data.filter(r => r.type === 'Milk'));
     } catch (err) {
-      setError('Failed to fetch data');
+      setError('Failed to fetch records');
     }
   };
 
-  const handleMilkSubmit = async (e) => {
-    e.preventDefault();
+  const fetchAnalytics = async () => {
     try {
-      await createMilk({ ...milkForm, userId: user.id });
-      fetchData();
-      setMilkForm({ quantity: '', date: '' });
+      const month = format(selectedMonth, 'yyyy-MM');
+      const analyticsData = await Promise.all(
+        records.map(async (record) => {
+          const res = await getMilkAnalytics(record.id, month);
+          return { ...res.data, recordName: record.name };
+        })
+      );
+      setAnalytics(analyticsData);
     } catch (err) {
-      setError('Failed to add milk');
-    }
-  };
-
-  const handleBillSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await createBill({ ...billForm, userId: user.id });
-      fetchData();
-      setBillForm({ amount: '', description: '' });
-    } catch (err) {
-      setError('Failed to add bill');
-    }
-  };
-
-  const handleRentSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await createRent({ ...rentForm, userId: user.id });
-      fetchData();
-      setRentForm({ amount: '', month: '' });
-    } catch (err) {
-      setError('Failed to add rent');
+      setError('Failed to fetch analytics');
     }
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-      <Typography variant="h4" gutterBottom>
-        Welcome, {user.email} ({user.role})
-      </Typography>
-      {error && <Alert severity="error">{error}</Alert>}
-      <Grid container spacing={3}>
-        {user.role === 'Admin' && (
-          <>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">Add Milk</Typography>
-                  <form onSubmit={handleMilkSubmit}>
-                    <TextField
-                      label="Quantity (liters)"
-                      type="number"
-                      fullWidth
-                      margin="normal"
-                      value={milkForm.quantity}
-                      onChange={(e) =>
-                        setMilkForm({ ...milkForm, quantity: e.target.value })
-                      }
-                      required
-                    />
-                    <TextField
-                      label="Date"
-                      type="date"
-                      fullWidth
-                      margin="normal"
-                      value={milkForm.date}
-                      onChange={(e) =>
-                        setMilkForm({ ...milkForm, date: e.target.value })
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      required
-                    />
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      sx={{ mt: 2 }}
-                    >
-                      Add Milk
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">Add Bill</Typography>
-                  <form onSubmit={handleBillSubmit}>
-                    <TextField
-                      label="Amount"
-                      type="number"
-                      fullWidth
-                      margin="normal"
-                      value={billForm.amount}
-                      onChange={(e) =>
-                        setBillForm({ ...billForm, amount: e.target.value })
-                      }
-                      required
-                    />
-                    <TextField
-                      label="Description"
-                      fullWidth
-                      margin="normal"
-                      value={billForm.description}
-                      onChange={(e) =>
-                        setBillForm({ ...billForm, description: e.target.value })
-                      }
-                      required
-                    />
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      sx={{ mt: 2 }}
-                    >
-                      Add Bill
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">Add Rent</Typography>
-                  <form onSubmit={handleRentSubmit}>
-                    <TextField
-                      label="Amount"
-                      type="number"
-                      fullWidth
-                      margin="normal"
-                      value={rentForm.amount}
-                      onChange={(e) =>
-                        setRentForm({ ...rentForm, amount: e.target.value })
-                      }
-                      required
-                    />
-                    <TextField
-                      label="Month"
-                      fullWidth
-                      margin="normal"
-                      value={rentForm.month}
-                      onChange={(e) =>
-                        setRentForm({ ...rentForm, month: e.target.value })
-                      }
-                      required
-                    />
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      sx={{ mt: 2 }}
-                    >
-                      Add Rent
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </Grid>
-          </>
-        )}
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Milk Records</Typography>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell>Quantity (liters)</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>User ID</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {milkData.map((milk) => (
-                    <TableRow key={milk.id}>
-                      <TableCell>{milk.id}</TableCell>
-                      <TableCell>{milk.quantity}</TableCell>
-                      <TableCell>{milk.date}</TableCell>
-                      <TableCell>{milk.userId}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Bills</Typography>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell>Amount</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>User ID</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {billData.map((bill) => (
-                    <TableRow key={bill.id}>
-                      <TableCell>{bill.id}</TableCell>
-                      <TableCell>{bill.amount}</TableCell>
-                      <TableCell>{bill.description}</TableCell>
-                      <TableCell>{bill.userId}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Rent Records</Typography>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell>Amount</TableCell>
-                    <TableCell>Month</TableCell>
-                    <TableCell>User ID</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rentData.map((rent) => (
-                    <TableRow key={rent.id}>
-                      <TableCell>{rent.id}</TableCell>
-                      <TableCell>{rent.amount}</TableCell>
-                      <TableCell>{rent.month}</TableCell>
-                      <TableCell>{rent.userId}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        <Typography variant="h4" gutterBottom>Dashboard</Typography>
+        {error && <Alert severity="error">{error}</Alert>}
+        <DatePicker
+          views={['year', 'month']}
+          label="Select Month"
+          value={selectedMonth}
+          onChange={setSelectedMonth}
+        />
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Record</TableCell>
+              <TableCell>Month</TableCell>
+              <TableCell>Total Quantity (liters)</TableCell>
+              <TableCell>Total Cost (Rs)</TableCell>
+              <TableCell>Bought Days</TableCell>
+              <TableCell>Leave Days</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {analytics.map((item) => (
+              <TableRow key={`${item.recordName}-${item.month}`}>
+                <TableCell>{item.recordName}</TableCell>
+                <TableCell>{item.month}</TableCell>
+                <TableCell>{item.totalQuantity}</TableCell>
+                <TableCell>{item.totalCost}</TableCell>
+                <TableCell>{item.boughtDays}</TableCell>
+                <TableCell>{item.leaveDays}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+    </LocalizationProvider>
   );
 }
 
-export default Dashboard;
+export default DashboardPage;
