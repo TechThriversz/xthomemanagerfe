@@ -1,3 +1,4 @@
+// frontend/src/components/Layout.jsx
 import { useState } from 'react';
 import {
   AppBar,
@@ -14,9 +15,6 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
-import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import ApartmentIcon from '@mui/icons-material/Apartment';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -33,6 +31,7 @@ function Layout({ user, onLogout, children }) {
   };
 
   const menuItems = [
+    { text: 'Dashboard', icon: <HomeIcon />, path: '/dashboard' },
     { text: 'Records', icon: <HomeIcon />, path: '/records' },
     ...(user.role === 'Admin'
       ? [
@@ -43,7 +42,7 @@ function Layout({ user, onLogout, children }) {
   ];
 
   const drawer = (
-    <div>
+    <Box sx={{ bgcolor: 'primary.main', height: '100%', color: 'white' }}>
       <Toolbar>
         <Typography variant="h6" noWrap>
           XTHomeManager
@@ -51,17 +50,30 @@ function Layout({ user, onLogout, children }) {
       </Toolbar>
       <List>
         {menuItems.map((item) => (
-          <ListItem button key={item.text} onClick={() => navigate(item.path)}>
+          <ListItem
+            key={item.text}
+            onClick={() => navigate(item.path)}
+            sx={{
+              '&:hover': { bgcolor: 'primary.dark' },
+              cursor: 'pointer',
+            }}
+          >
             <ListItemIcon sx={{ color: 'white' }}>{item.icon}</ListItemIcon>
             <ListItemText primary={item.text} />
           </ListItem>
         ))}
-        <ListItem button onClick={onLogout}>
+        <ListItem
+          onClick={onLogout}
+          sx={{
+            '&:hover': { bgcolor: 'primary.dark' },
+            cursor: 'pointer',
+          }}
+        >
           <ListItemIcon sx={{ color: 'white' }}><LogoutIcon /></ListItemIcon>
           <ListItemText primary="Logout" />
         </ListItem>
       </List>
-    </div>
+    </Box>
   );
 
   return (
@@ -69,7 +81,10 @@ function Layout({ user, onLogout, children }) {
       <CssBaseline />
       <AppBar
         position="fixed"
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          bgcolor: 'primary.main',
+        }}
       >
         <Toolbar>
           <IconButton
@@ -96,7 +111,11 @@ function Layout({ user, onLogout, children }) {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              bgcolor: 'primary.main',
+            },
           }}
         >
           {drawer}
@@ -105,7 +124,11 @@ function Layout({ user, onLogout, children }) {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              bgcolor: 'primary.main',
+            },
           }}
           open
         >
@@ -114,7 +137,13 @@ function Layout({ user, onLogout, children }) {
       </Box>
       <Box
         component="main"
-        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          bgcolor: 'background.default',
+          minHeight: '100vh',
+        }}
       >
         <Toolbar />
         {children}
