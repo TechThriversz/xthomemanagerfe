@@ -1,214 +1,342 @@
 import { useState, useEffect } from 'react';
-import {
-  Typography, Table, TableBody, TableCell, TableHead, TableRow,
-  Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Select, MenuItem, Alert, Tabs, Tab, IconButton,
-  Box
-} from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Box, Typography, Tabs, Tab, TextField, Button, Alert, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress } from '@mui/material';
+import { Delete } from '@mui/icons-material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { useParams } from 'react-router-dom';
-import { format, startOfMonth, subMonths } from 'date-fns';
-import {
-  getRecords, getMilk, createMilk, deleteMilk, getBills, createBill, deleteBill,
-  getRent, createRent, deleteRent
-} from '../services/api';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { getMilk, createMilk, deleteMilk, getBills, createBill, deleteBill, getRent, createRent, deleteRent } from '../services/api';
+import '../App.css';
 
 function RecordDetail({ user }) {
   const { recordId } = useParams();
-  const [record, setRecord] = useState(null);
-  const [milkData, setMilkData] = useState([]);
-  const [billData, setBillData] = useState([]);
-  const [rentData, setRentData] = useState([]);
-  const [error, setError] = useState('');
-  const [open, setOpen] = useState(false);
-  const [milkForm, setMilkForm] = useState({ quantityLiters: '', status: 'Bought', date: new Date() });
-  const [filter, setFilter] = useState({ type: 'all', startDate: null, endDate: null });
+  const navigate = useNavigate();
   const [tab, setTab] = useState(0);
+  const [milkEntries, setMilkEntries] = useState([]);
+  const [billEntries, setBillEntries] = useState([]);
+  const [rentEntries, setRentEntries] = useState([]);
+  const [milkForm, setMilkForm] = useState({ date: null, quantityLiters: '', status: '' });
+  const [billForm, setBillForm] = useState({ month: null, amount: '', referenceNumber: '', file: null });
+  const [rentForm, setRentForm] = useState({ month: null, amount: '' });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchRecord();
-    fetchData();
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
-  }, [recordId, filter]);
+    console.log('RecordDetail: user:', user, 'recordId:', recordId);
+    if (!user?.id) {
+      setError('Please log in to view this page');
+      navigate('/login');
+      return;
+    }
+    fetchEntries();
+  }, [recordId, user, navigate]);
 
-  const fetchRecord = async () => {
+  const fetchEntries = async () => {
+    setLoading(true);
     try {
-      const res = await getRecords();
-      const found = res.data.find(r => r.id === recordId);
-      setRecord(found);
+      const [milkRes, billRes, rentRes] = await Promise.all([
+        getMilk(recordId),
+        getBills(recordId),
+        getRent(recordId),
+      ]);
+      setMilkEntries(milkRes.data || []);
+      setBillEntries(billRes.data || []);
+      setRentEntries(rentRes.data || []);
+      setError('');
     } catch (err) {
-      setError('Failed to fetch record');
+      setError('Failed to fetch entries: ' + (err.response?.data || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchData = async () => {
+  const handleMilkSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      if (record?.type === 'Milk') {
-        const res = await getMilk(recordId);
-        let filtered = res.data;
-        if (filter.type !== 'all') {
-          const start = filter.startDate || subMonths(new Date(), 1);
-          const end = filter.endDate || new Date();
-          filtered = filtered.filter(m => {
-            const date = new Date(m.date);
-            return date >= start && date <= end;
-          });
-        }
-        setMilkData(filtered);
-      } else if (record?.type === 'Bill') {
-        const res = await getBills(recordId);
-        setBillData(res.data);
-      } else if (record?.type === 'Rent') {
-        const res = await getRent(recordId);
-        setRentData(res.data);
-      }
+      await createMilk({ recordId: parseInt(recordId), date: milkForm.date?.toISOString().split('T')[0], quantityLiters: parseFloat(milkForm.quantityLiters), status: milkForm.status });
+      setMilkForm({ date: null, quantityLiters: '', status: '' });
+      setSuccess('Milk entry added');
+      fetchEntries();
     } catch (err) {
-      setError('Failed to fetch data');
+      setError('Failed to add milk entry: ' + (err.response?.data || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleMilkSubmit = async () => {
+  const handleBillSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      await createMilk({ ...milkForm, recordId, date: format(milkForm.date, 'yyyy-MM-dd') });
-      setMilkForm({ quantityLiters: '', status: 'Bought', date: new Date() });
-      setOpen(false);
-      fetchData();
+      const formData = new FormData();
+      formData.append('recordId', recordId);
+      formData.append('month', billForm.month?.toISOString().slice(0, 7));
+      formData.append('amount', parseFloat(billForm.amount));
+      formData.append('referenceNumber', billForm.referenceNumber);
+      formData.append('adminId', user.id);
+      if (billForm.file) formData.append('file', billForm.file);
+      await createBill(formData);
+      setBillForm({ month: null, amount: '', referenceNumber: '', file: null });
+      setSuccess('Bill entry added');
+      fetchEntries();
     } catch (err) {
-      setError('Failed to add milk log');
+      setError('Failed to add bill entry: ' + (err.response?.data || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteMilk = async (id) => {
+  const handleRentSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      await deleteMilk(id);
-      fetchData();
+      await createRent({ recordId: parseInt(recordId), month: rentForm.month?.toISOString().slice(0, 7), amount: parseFloat(rentForm.amount), adminId: user.id });
+      setRentForm({ month: null, amount: '' });
+      setSuccess('Rent entry added');
+      fetchEntries();
     } catch (err) {
-      setError('Failed to delete milk log');
+      setError('Failed to add rent entry: ' + (err.response?.data || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!record) return <Typography>Loading...</Typography>;
+  const handleDelete = async (type, id) => {
+    setLoading(true);
+    try {
+      if (type === 'milk') await deleteMilk(id);
+      else if (type === 'bill') await deleteBill(id);
+      else if (type === 'rent') await deleteRent(id);
+      setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} entry deleted`);
+      fetchEntries();
+    } catch (err) {
+      setError(`Failed to delete ${type} entry: ` + (err.response?.data || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-        <Typography variant="h4" gutterBottom>
-          {record.name} ({record.type}) - Created by {record.user?.fullName}
+      <Box>
+        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000' }}>
+          Record Details (ID: {recordId})
         </Typography>
-        {error && <Alert severity="error">{error}</Alert>}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Box>
-            <Select
-              value={filter.type}
-              onChange={(e) => setFilter({ ...filter, type: e.target.value })}
-            >
-              <MenuItem value="all">All</MenuItem>
-              <MenuItem value="daily">Daily</MenuItem>
-              <MenuItem value="weekly">Weekly</MenuItem>
-              <MenuItem value="monthly">Monthly</MenuItem>
-            </Select>
-            {filter.type !== 'all' && (
-              <>
-                <DatePicker
-                  label="Start Date"
-                  value={filter.startDate}
-                  onChange={(date) => setFilter({ ...filter, startDate: date })}
-                />
-                <DatePicker
-                  label="End Date"
-                  value={filter.endDate}
-                  onChange={(date) => setFilter({ ...filter, endDate: date })}
-                />
-              </>
-            )}
-          </Box>
-          {user.role === 'Admin' && (
-            <Button variant="contained" onClick={() => setOpen(true)}>
-              Add {record.type} Log
-            </Button>
-          )}
-        </Box>
-        <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)}>
-          <Tab label="List View" />
+        {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#2E8B57', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
+        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
+        <Tabs
+          value={tab}
+          onChange={(e, newValue) => setTab(newValue)}
+          centered
+          sx={{ mb: 2, '& .MuiTab-root': { color: '#8B0000' }, '& .Mui-selected': { color: '#FF4500' } }}
+        >
+          <Tab label="Milk" />
+          <Tab label="Electricity Bills" />
+          <Tab label="Rent" />
         </Tabs>
         {tab === 0 && (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                {record.type === 'Milk' && (
-                  <>
-                    <TableCell>Quantity (liters)</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Rate/Liter (Rs)</TableCell>
-                    <TableCell>Total Cost (Rs)</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </>
-                )}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {record.type === 'Milk' && milkData.map((milk) => (
-                <TableRow key={milk.id} sx={{ backgroundColor: milk.status === 'Leave' ? '#ffe6e6' : 'inherit' }}>
-                  <TableCell>{milk.id}</TableCell>
-                  <TableCell>{milk.status === 'Leave' ? 'N/A' : milk.quantityLiters}</TableCell>
-                  <TableCell>{milk.status}</TableCell>
-                  <TableCell>{milk.status === 'Leave' ? 'N/A' : milk.ratePerLiter}</TableCell>
-                  <TableCell>{milk.status === 'Leave' ? 'N/A' : milk.totalCost}</TableCell>
-                  <TableCell>{format(new Date(milk.date), 'yyyy-MM-dd')}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => alert('Edit functionality TBD')}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton onClick={() => handleDeleteMilk(milk.id)}>
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-        <Dialog open={open} onClose={() => setOpen(false)}>
-          <DialogTitle>Add {record.type} Log</DialogTitle>
-          <DialogContent>
-            {record.type === 'Milk' && (
-              <>
-                <TextField
-                  label="Quantity (liters)"
-                  type="number"
-                  fullWidth
-                  margin="normal"
-                  value={milkForm.quantityLiters}
-                  onChange={(e) => setMilkForm({ ...milkForm, quantityLiters: e.target.value })}
-                  disabled={milkForm.status === 'Leave'}
-                />
-                <Select
-                  label="Status"
-                  fullWidth
-                  value={milkForm.status}
-                  onChange={(e) => setMilkForm({ ...milkForm, status: e.target.value })}
-                >
-                  <MenuItem value="Bought">Bought</MenuItem>
-                  <MenuItem value="Leave">Leave</MenuItem>
-                </Select>
-                <DatePicker
-                  label="Date"
-                  value={milkForm.date}
-                  onChange={(date) => setMilkForm({ ...milkForm, date })}
-                />
-              </>
+          <Box className="form-container">
+            <Typography variant="h6" sx={{ color: '#8B0000' }}>Add Milk Log</Typography>
+            <form onSubmit={handleMilkSubmit}>
+              <DatePicker
+                label="Date"
+                value={milkForm.date}
+                onChange={(date) => setMilkForm({ ...milkForm, date })}
+                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }} />}
+              />
+              <TextField
+                label="Quantity (Liters)"
+                type="number"
+                fullWidth
+                margin="normal"
+                value={milkForm.quantityLiters}
+                onChange={(e) => setMilkForm({ ...milkForm, quantityLiters: e.target.value })}
+                required
+                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+              />
+              <TextField
+                label="Status (e.g., Active, Leave)"
+                fullWidth
+                margin="normal"
+                value={milkForm.status}
+                onChange={(e) => setMilkForm({ ...milkForm, status: e.target.value })}
+                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+              />
+              <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+                Add Milk Log
+              </Button>
+            </form>
+            {milkEntries.length === 0 ? (
+              <Typography sx={{ mt: 2, textAlign: 'center', color: '#8B0000' }}>No data</Typography>
+            ) : (
+              <Box className="table-container">
+                <Table sx={{ border: '1px solid #2E8B57' }}>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: '#2E8B57' }}>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Date</TableCell>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Quantity (Liters)</TableCell>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Status</TableCell>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {milkEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{new Date(entry.date).toLocaleDateString()}</TableCell>
+                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.quantityLiters}</TableCell>
+                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.status || '-'}</TableCell>
+                        <TableCell>
+                          {user.role === 'Admin' && (
+                            <IconButton onClick={() => handleDelete('milk', entry.id)} disabled={loading}>
+                              <Delete sx={{ color: '#FF4500' }} />
+                            </IconButton>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
             )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleMilkSubmit} variant="contained">Add</Button>
-          </DialogActions>
-        </Dialog>
+          </Box>
+        )}
+        {tab === 1 && (
+          <Box className="form-container">
+            <Typography variant="h6" sx={{ color: '#8B0000' }}>Add Electricity Bill</Typography>
+            <form onSubmit={handleBillSubmit}>
+              <DatePicker
+                label="Month"
+                views={['year', 'month']}
+                value={billForm.month}
+                onChange={(date) => setBillForm({ ...billForm, month: date })}
+                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }} />}
+              />
+              <TextField
+                label="Amount (Rs)"
+                type="number"
+                fullWidth
+                margin="normal"
+                value={billForm.amount}
+                onChange={(e) => setBillForm({ ...billForm, amount: e.target.value })}
+                required
+                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+              />
+              <TextField
+                label="Reference Number"
+                fullWidth
+                margin="normal"
+                value={billForm.referenceNumber}
+                onChange={(e) => setBillForm({ ...billForm, referenceNumber: e.target.value })}
+                required
+                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+              />
+              <TextField
+                label="Upload Bill Image"
+                type="file"
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                margin="normal"
+                onChange={(e) => setBillForm({ ...billForm, file: e.target.files[0] })}
+                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+              />
+              <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+                Add Bill
+              </Button>
+            </form>
+            {billEntries.length === 0 ? (
+              <Typography sx={{ mt: 2, textAlign: 'center', color: '#8B0000' }}>No data</Typography>
+            ) : (
+              <Box className="table-container">
+                <Table sx={{ border: '1px solid #2E8B57' }}>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: '#2E8B57' }}>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Month</TableCell>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Amount (Rs)</TableCell>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Reference Number</TableCell>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {billEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.month}</TableCell>
+                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.amount}</TableCell>
+                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.referenceNumber}</TableCell>
+                        <TableCell>
+                          {user.role === 'Admin' && (
+                            <IconButton onClick={() => handleDelete('bill', entry.id)} disabled={loading}>
+                              <Delete sx={{ color: '#FF4500' }} />
+                            </IconButton>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            )}
+          </Box>
+        )}
+        {tab === 2 && (
+          <Box className="form-container">
+            <Typography variant="h6" sx={{ color: '#8B0000' }}>Add Rent Log</Typography>
+            <form onSubmit={handleRentSubmit}>
+              <DatePicker
+                label="Month"
+                views={['year', 'month']}
+                value={rentForm.month}
+                onChange={(date) => setRentForm({ ...rentForm, month: date })}
+                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }} />}
+              />
+              <TextField
+                label="Amount (Rs)"
+                type="number"
+                fullWidth
+                margin="normal"
+                value={rentForm.amount}
+                onChange={(e) => setRentForm({ ...rentForm, amount: e.target.value })}
+                required
+                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+              />
+              <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+                Add Rent Log
+              </Button>
+            </form>
+            {rentEntries.length === 0 ? (
+              <Typography sx={{ mt: 2, textAlign: 'center', color: '#8B0000' }}>No data</Typography>
+            ) : (
+              <Box className="table-container">
+                <Table sx={{ border: '1px solid #2E8B57' }}>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: '#2E8B57' }}>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Month</TableCell>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Amount (Rs)</TableCell>
+                      <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {rentEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.month}</TableCell>
+                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.amount}</TableCell>
+                        <TableCell>
+                          {user.role === 'Admin' && (
+                            <IconButton onClick={() => handleDelete('rent', entry.id)} disabled={loading}>
+                              <Delete sx={{ color: '#FF4500' }} />
+                            </IconButton>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            )}
+          </Box>
+        )}
       </Box>
     </LocalizationProvider>
   );

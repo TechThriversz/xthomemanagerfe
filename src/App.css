@@ -1,8 +1,31 @@
+/* frontend/src/App.css */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content-container {
+  border-radius: 8px;
   padding: 2rem;
-  text-align: center;
+  margin-top: 80px; /* Increased padding from TopBar (64px + extra space) */
+  display: flex;
+  flex-grow: 1;
+  margin-left: 240px; /* Width of Sidebar, assuming 240px standard for Material-UI drawer */
+  min-height: calc(100vh - 80px - 4rem); /* Adjust for TopBar and padding */
+}
+
+.form-container,
+.table-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+  width: 100%; /* Ensure forms and tables fit within content area */
 }
 
 .logo {
@@ -39,4 +62,32 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Login */
+.login-container {
+  max-width: 400px;
+  width: 100%;
+  margin: auto;
+}
+
+/* Dashboard */
+.dashboard-container, .record-container, .inivte-container, .settings-container {
+  padding: 2rem;
+}
+.analytical-boxes-grid {
+
+}
+/* Record Page */
+.record-container {
+  max-width: 1170px; /* Adjusted for larger screens */
+  width: 100%;
+  margin: auto;
+}
+
+/* Invite */
+.inivte-containe, .settings-container {
+  max-width: 600px; /* Adjusted for larger screens */
+  width: 100%;
+  margin: auto;
 }

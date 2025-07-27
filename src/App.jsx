@@ -1,119 +1,69 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Box, CssBaseline } from '@mui/material';
+import TopBar from './components/TopBar';
+import Sidebar from './components/Sidebar';
+import DashboardPage from './pages/DashboardPage';
+import RecordDetail from './pages/RecordDetail';
+import RecordsPage from './pages/RecordsPage';
+import SettingsPage from './pages/SettingsPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import InviteViewer from './pages/InviteViewer';
-import RecordsPage from './pages/RecordsPage';
-import RecordDetail from './pages/RecordDetail';
-import SettingsPage from './pages/SettingsPage';
-import DashboardPage from './pages/DashboardPage';
-import Layout from './components/Layout';
-
-const theme = createTheme({
-    palette: {
-        primary: { main: '#1976d2' },
-        secondary: { main: '#dc004e' },
-        background: { default: '#f5f5f5' },
-    },
-});
 
 function App() {
-    const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null); // Manage user state globally
 
-    useEffect(() => {
-        console.log('App: User state initialized:', user); // Debug user state
-    }, [user]);
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    } else {
+      navigate('/login');
+    }
+  }, [navigate]);
 
-    const handleLogin = (userData) => {
-        console.log('App: handleLogin received:', userData); // Debug login data
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-    };
+  const handleLogin = (userData) => {
+    setUser(userData); // Update user state on login
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
 
-    const handleLogout = () => {
-        console.log('App: Logging out, clearing user and token');
-        setUser(null);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-    };
+  const handleLogout = () => {
+    setUser(null); // Clear user state on logout
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
-    return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Routes>
-                <Route
-                    path="/login"
-                    element={user ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />}
-                />
-                <Route
-                    path="/register"
-                    element={user ? <Navigate to="/dashboard" /> : <Register />}
-                />
-                <Route
-                    path="/dashboard"
-                    element={
-                        user ? (
-                            <Layout user={user} onLogout={handleLogout}>
-                                <DashboardPage user={user} />
-                            </Layout>
-                        ) : (
-                            <Navigate to="/login" />
-                        )
-                    }
-                />
-                <Route
-                    path="/invite"
-                    element={
-                        user && user.role === 'Admin' ? (
-                            <Layout user={user} onLogout={handleLogout}>
-                                <InviteViewer />
-                            </Layout>
-                        ) : (
-                            <Navigate to="/login" />
-                        )
-                    }
-                />
-                <Route
-                    path="/records"
-                    element={
-                        user ? (
-                            <Layout user={user} onLogout={handleLogout}>
-                                <RecordsPage user={user} />
-                            </Layout>
-                        ) : (
-                            <Navigate to="/login" />
-                        )
-                    }
-                />
-                <Route
-                    path="/record/:recordId"
-                    element={
-                        user ? (
-                            <Layout user={user} onLogout={handleLogout}>
-                                <RecordDetail user={user} />
-                            </Layout>
-                        ) : (
-                            <Navigate to="/login" />
-                        )
-                    }
-                />
-                <Route
-                    path="/settings"
-                    element={
-                        user && user.role === 'Admin' ? (
-                            <Layout user={user} onLogout={handleLogout}>
-                                <SettingsPage user={user} />
-                            </Layout>
-                        ) : (
-                            <Navigate to="/login" />
-                        )
-                    }
-                />
-                <Route path="/" element={<Navigate to="/login" />} />
-            </Routes>
-        </ThemeProvider>
-    );
+  // Callback to update user state from any component
+  const updateUser = (newUserData) => {
+    setUser(newUserData);
+    localStorage.setItem('user', JSON.stringify(newUserData));
+  };
+
+  return (
+    <Box sx={{ bgcolor: '#f2f2f2', minHeight: '100vh', display: 'flex' }}>
+      <CssBaseline />
+      {user && (
+        <>
+          <TopBar user={user} onLogout={handleLogout} />
+          <Sidebar user={user} />
+        </>
+      )}
+      <Box id="root" className="content-container">
+        <Routes>
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="/register" element={<Register onRegister={handleLogin} />} />
+          <Route path="/dashboard" element={<DashboardPage user={user} />} />
+          <Route path="/record/:recordId" element={<RecordDetail user={user} />} />
+          <Route path="/records" element={<RecordsPage user={user} />} />
+          <Route path="/settings" element={<SettingsPage user={user} setUser={updateUser} />} /> 
+          <Route path="/invite" element={<InviteViewer user={user} />} />
+        </Routes>
+      </Box>
+    </Box>
+  );
 }
 
 export default App;

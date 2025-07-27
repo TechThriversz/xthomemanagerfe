@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Typography, TextField, Button, Select, MenuItem, Alert } from '@mui/material';
+import { Typography, TextField, Button, Select, MenuItem, Alert, Box } from '@mui/material'; // Added Box import
 import { inviteViewer, getRecords } from '../services/api';
+import '../App.css';
 
 function InviteViewer({ user }) {
   const [email, setEmail] = useState('');
@@ -36,10 +37,12 @@ function InviteViewer({ user }) {
   };
 
   return (
-    <div>
-      <Typography variant="h4" gutterBottom>Invite Viewer</Typography>
-      {error && <Alert severity="error">{error}</Alert>}
-      {success && <Alert severity="success">{success}</Alert>}
+    <Box className="form-container inivte-container">
+      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000' }}>
+        Invite Viewer
+      </Typography>
+      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#2E8B57', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
       <form onSubmit={handleSubmit}>
         <TextField
           label="Viewer Email"
@@ -48,6 +51,7 @@ function InviteViewer({ user }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
         />
         <Select
           label="Record"
@@ -55,17 +59,23 @@ function InviteViewer({ user }) {
           value={recordName}
           onChange={(e) => setRecordName(e.target.value)}
           required
+          sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiSelect-select': { color: '#2E8B57' } }}
         >
           <MenuItem value="">Select Record</MenuItem>
           {records.map((record) => (
             <MenuItem key={record.id} value={record.name}>{record.name}</MenuItem>
           ))}
         </Select>
-        <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          sx={{ mt: 2, py: 1.5, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }}
+        >
           Invite
         </Button>
       </form>
-    </div>
+    </Box>
   );
 }
 

@@ -1,148 +1,163 @@
 import { useState, useEffect } from 'react';
-import {
-  Typography, Table, TableBody, TableCell, TableHead, TableRow,
-  Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Select, MenuItem, Alert, IconButton, Box
-} from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
+import { Link, useNavigate } from 'react-router-dom';
+import { Box, Typography, TextField, Button, Alert, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem } from '@mui/material';
+import { Delete } from '@mui/icons-material';
 import { getRecords, createRecord, deleteRecord } from '../services/api';
+import '../App.css';
 
 function RecordsPage({ user }) {
+  const navigate = useNavigate();
   const [records, setRecords] = useState([]);
+  const [form, setForm] = useState({ name: '', type: '' });
   const [error, setError] = useState('');
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', type: '', userId: getUserIdFromToken() || user?.id || '', allowViewerAccess: false });
-
-  // Decode JWT token to get user ID
-  function getUserIdFromToken() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.warn('RecordsPage: No token found in localStorage');
-      return '';
-    }
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      console.log('RecordsPage: Decoded JWT payload:', payload);
-      return payload.id || '';
-    } catch (err) {
-      console.error('RecordsPage: Failed to decode token:', err.message);
-      return '';
-    }
-  }
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
-    console.log('RecordsPage rendered, user:', user, 'token userId:', getUserIdFromToken());
-    if (!user?.id && !getUserIdFromToken()) {
-      setError('User not authenticated. Please log in again.');
+    console.log('RecordsPage: user:', user);
+    if (!user?.id) {
+      setError('Please log in to view this page');
+      navigate('/login');
+      return;
     }
     fetchRecords();
-  }, [user]);
+  }, [user, navigate]);
 
   const fetchRecords = async () => {
+    setLoading(true);
     try {
-      const res = await getRecords();
-      setRecords(res.data);
+      const response = await getRecords();
+      setRecords(response.data || []);
       setError('');
     } catch (err) {
       setError('Failed to fetch records: ' + (err.response?.data || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleAddRecord = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      if (!form.name || !form.type) {
-        setError('Name and Type are required');
-        return;
-      }
-      if (!form.userId) {
-        setError('User ID is missing. Please log in again.');
-        return;
-      }
-      console.log('RecordsPage: Creating record with payload:', form);
-      await createRecord(form);
-      setForm({ name: '', type: '', userId: getUserIdFromToken() || user?.id || '', allowViewerAccess: false });
-      setOpen(false);
+      await createRecord({ ...form, userId: user.id });
+      setForm({ name: '', type: '' });
+      setSuccess('Record created successfully');
+      setOpenDialog(false); // Close dialog after success
       fetchRecords();
-      setError('');
     } catch (err) {
-      setError('Failed to add record: ' + (err.response?.data || err.message));
+      setError('Failed to create record: ' + (err.response?.data || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
+    setLoading(true);
     try {
       await deleteRecord(id);
+      setSuccess('Record deleted successfully');
       fetchRecords();
-      setError('');
     } catch (err) {
       setError('Failed to delete record: ' + (err.response?.data || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setForm({ name: '', type: '' }); // Reset form on close
+  };
+
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
-      <Typography variant="h4" gutterBottom align="center">Records</Typography>
-      {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setOpen(true)}
-        sx={{ mb: 2 }}
-      >
-        Add Record
-      </Button>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Type</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {records.map((record) => (
-            <TableRow key={record.id}>
-              <TableCell>{record.name}</TableCell>
-              <TableCell>{record.type}</TableCell>
-              <TableCell>
-                <IconButton onClick={() => alert('Edit functionality TBD')}>
-                  <Edit />
-                </IconButton>
-                <IconButton onClick={() => handleDelete(record.id)}>
-                  <Delete />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New Record</DialogTitle>
+    <Box className="record-container">
+      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000' }}>
+        Records
+      </Typography>
+      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#2E8B57', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
+      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
+      {user.role === 'Admin' && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Button variant="contained" onClick={handleOpenDialog} sx={{ bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+            Create Record
+          </Button>
+        </Box>
+      )}
+      {records.length === 0 ? (
+        <Typography sx={{ mt: 2, textAlign: 'center', color: '#8B0000' }}>No data</Typography>
+      ) : (
+        <Box className="table-container">
+          <Table sx={{ border: '1px solid #2E8B57' }}>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#2E8B57' }}>
+                <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Name</TableCell>
+                <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Type</TableCell>
+                {user.role === 'Admin' && <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Actions</TableCell>}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {records.map((record) => (
+                <TableRow key={record.id}>
+                  <TableCell sx={{ border: '1px solid #2E8B57' }}>
+                    <Link to={`/record/${record.id}`} style={{ textDecoration: 'none', color: '#2E8B57' }}>
+                      {record.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{record.type}</TableCell>
+                  {user.role === 'Admin' && (
+                    <TableCell sx={{ border: '1px solid #2E8B57' }}>
+                      <IconButton onClick={() => handleDelete(record.id)} disabled={loading}>
+                        <Delete sx={{ color: '#FF4500' }} />
+                      </IconButton>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      )}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle sx={{ color: '#8B0000' }}>Create New Record</DialogTitle>
         <DialogContent>
-          <TextField
-            label="Name"
-            fullWidth
-            margin="normal"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            required
-          />
-          <Select
-            label="Type"
-            fullWidth
-            value={form.type}
-            onChange={(e) => setForm({ ...form, type: e.target.value })}
-            required
-          >
-            <MenuItem value="Milk">Milk</MenuItem>
-            <MenuItem value="Bill">Bill</MenuItem>
-            <MenuItem value="Rent">Rent</MenuItem>
-          </Select>
+          <form onSubmit={handleSubmit}>
+            <TextField
+              label="Record Name"
+              fullWidth
+              margin="normal"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+              sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+            />
+            <Select
+              label="Type"
+              fullWidth
+              value={form.type}
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
+              required
+              sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiSelect-select': { color: '#2E8B57' } }}
+            >
+              <MenuItem value="">Select Type</MenuItem>
+              <MenuItem value="Milk">Milk</MenuItem>
+              <MenuItem value="Bill">Bill</MenuItem>
+              <MenuItem value="Rent">Rent</MenuItem>
+            </Select>
+            <DialogActions>
+              <Button onClick={handleCloseDialog} sx={{ color: '#8B0000' }}>Cancel</Button>
+              <Button type="submit" variant="contained" sx={{ bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+                Create
+              </Button>
+            </DialogActions>
+          </form>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
-          <Button onClick={handleAddRecord} variant="contained" color="primary">Add</Button>
-        </DialogActions>
       </Dialog>
     </Box>
   );
