@@ -2,7 +2,6 @@
 #root {
     max-width: 100%;
     margin: 0 auto;
-    padding: 2rem;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -10,84 +9,127 @@
 }
 
 .content-container {
-  border-radius: 8px;
-  padding: 2rem;
-  margin-top: 80px; /* Increased padding from TopBar (64px + extra space) */
-  display: flex;
-  flex-grow: 1;
-  margin-left: 240px; /* Width of Sidebar, assuming 240px standard for Material-UI drawer */
-  min-height: calc(100vh - 80px - 4rem); /* Adjust for TopBar and padding */
+    border-radius: 8px;
+    padding: 2rem;
+    margin-top: 80px !important; /* Matches TopBar height + extra space */
+    display: flex;
+    flex-grow: 1;
+    margin-left: 250px; /* Match Sidebar width exactly */
+    min-height: calc(100vh - 80px - 4rem); /* Adjust for TopBar and padding */
+    transition: margin-left 0.3s ease; /* Smooth transition if sidebar width changes */
+}
+
+/* Ensure content adjusts if sidebar is hidden or resized */
+@media (max-width: 768px) {
+    .content-container {
+        margin-left: 0;
+        padding: 1rem;
+    }
 }
 
 .form-container,
 .table-container {
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  padding: 2rem;
-  width: 100%; /* Ensure forms and tables fit within content area */
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    padding: 2rem;
+    width: 100%; /* Ensure forms and tables fit within content area */
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+    filter: drop-shadow(0 0 2em #646cffaa);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+    filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+    a:nth-of-type(2) .logo {
+        animation: logo-spin infinite 20s linear;
+    }
 }
 
 .card {
-  padding: 2em;
+    padding: 2em;
 }
 
 .read-the-docs {
-  color: #888;
+    color: #888;
 }
 
 /* Login */
 .login-container {
-  max-width: 400px;
-  width: 100%;
-  margin: auto;
+    max-width: 400px;
+    width: 100%;
+    margin: auto;
 }
 
 /* Dashboard */
-.dashboard-container, .record-container, .inivte-container, .settings-container {
-  padding: 2rem;
+.dashboard-container,
+.record-container,
+.inivte-container,
+.settings-container,
+.milk-container,
+.rent-container,
+.bills-container {
+    padding: 2rem;
 }
-.analytical-boxes-grid {
+.analytical-boxes-grid {}
 
-}
 /* Record Page */
 .record-container {
-  max-width: 1170px; /* Adjusted for larger screens */
-  width: 100%;
-  margin: auto;
+    max-width: 1170px; /* Adjusted for larger screens */
+    width: 100%;
+    margin: auto;
+}
+
+/* MILK RENT BILLS */
+.milk-add-form,
+.rent-add-form,
+.bills-add-form {
+    max-width: 480px; /* Adjusted for larger screens */
+    width: 100%;
+    margin: auto;
+}
+.logs-table-container {
+background-color: #ffffff;
+    max-width: 992px;
+    width: 100%;
+    margin: 50px auto;
 }
 
 /* Invite */
-.inivte-containe, .settings-container {
-  max-width: 600px; /* Adjusted for larger screens */
-  width: 100%;
-  margin: auto;
+.inivte-container,
+.settings-container {
+    max-width: 600px; /* Adjusted for larger screens */
+    width: 100%;
+    margin: auto;
+}
+
+/* Fix for Sidebar overlap or misalignment */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Prevent horizontal scroll if sidebar exceeds */
+}
+
+@media (min-width: 769px) {
+    .content-container {
+        margin-left: 250px  !important; /* Ensure consistency with Sidebar width */
+    }
 }

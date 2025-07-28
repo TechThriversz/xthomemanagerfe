@@ -15,7 +15,6 @@ function RecordsPage({ user }) {
   const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
-    console.log('RecordsPage: user:', user);
     if (!user?.id) {
       setError('Please log in to view this page');
       navigate('/login');
@@ -44,7 +43,7 @@ function RecordsPage({ user }) {
       await createRecord({ ...form, userId: user.id });
       setForm({ name: '', type: '' });
       setSuccess('Record created successfully');
-      setOpenDialog(false); // Close dialog after success
+      setOpenDialog(false);
       fetchRecords();
     } catch (err) {
       setError('Failed to create record: ' + (err.response?.data || err.message));
@@ -72,7 +71,7 @@ function RecordsPage({ user }) {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setForm({ name: '', type: '' }); // Reset form on close
+    setForm({ name: '', type: '' });
   };
 
   return (
@@ -106,7 +105,14 @@ function RecordsPage({ user }) {
               {records.map((record) => (
                 <TableRow key={record.id}>
                   <TableCell sx={{ border: '1px solid #2E8B57' }}>
-                    <Link to={`/record/${record.id}`} style={{ textDecoration: 'none', color: '#2E8B57' }}>
+                    <Link
+                      to={
+                        record.type === 'Milk' ? `/milk/${record.id}/${record.name.replace(/ /g, '-')}` :
+                        record.type === 'Rent' ? `/rent/${record.id}/${record.name.replace(/ /g, '-')}` :
+                        record.type === 'Bill' ? `/bills/${record.id}/${record.name.replace(/ /g, '-')}` : `/record/${record.id}`
+                      }
+                      style={{ textDecoration: 'none', color: '#2E8B57' }}
+                    >
                       {record.name}
                     </Link>
                   </TableCell>
