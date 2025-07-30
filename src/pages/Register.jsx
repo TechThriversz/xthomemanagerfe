@@ -40,15 +40,15 @@ function Register({ onRegister }) {
   return (
     <Box className="login-container">
       <Box className="form-container">
-        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000' }}>
+        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222' }}>
           Register to XTHomeManager
         </Typography>
         {error && (
-          <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>
+          <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>
             {error}
           </Alert>
         )}
-        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
+        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             label="Full Name"
@@ -57,7 +57,7 @@ function Register({ onRegister }) {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
-            sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <TextField
             label="Email"
@@ -67,7 +67,7 @@ function Register({ onRegister }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <TextField
             label="Password"
@@ -77,13 +77,13 @@ function Register({ onRegister }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <Button
             type="submit"
             variant="contained"
             fullWidth
-            sx={{ mt: 2, py: 1.5, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }}
+            sx={{ mt: 2, py: 1.5, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }}
             disabled={loading}
           >
             Register
@@ -91,7 +91,7 @@ function Register({ onRegister }) {
           <Button
             variant="text"
             fullWidth
-            sx={{ mt: 1, color: '#2E8B57' }}
+            sx={{ mt: 1, color: '#1a2a44' }}
             onClick={() => navigate('/login')}
           >
             Already have an account? Login

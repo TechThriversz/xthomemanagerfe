@@ -18,7 +18,10 @@
     min-height: calc(100vh - 80px - 4rem); /* Adjust for TopBar and padding */
     transition: margin-left 0.3s ease; /* Smooth transition if sidebar width changes */
 }
-
+.dashboard-wrapper {
+    width: calc(100% - 250px) !important;
+    max-width: none !important;
+}
 /* Ensure content adjusts if sidebar is hidden or resized */
 @media (max-width: 768px) {
     .content-container {

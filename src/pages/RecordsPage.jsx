@@ -76,26 +76,26 @@ function RecordsPage({ user }) {
 
   return (
     <Box className="record-container">
-      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000' }}>
+      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222' }}>
         Records
       </Typography>
-      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#2E8B57', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
-      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
+      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#1a2a44', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
+      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
       {user.role === 'Admin' && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-          <Button variant="contained" onClick={handleOpenDialog} sx={{ bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+          <Button variant="contained" onClick={handleOpenDialog} sx={{ bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
             Create Record
           </Button>
         </Box>
       )}
       {records.length === 0 ? (
-        <Typography sx={{ mt: 2, textAlign: 'center', color: '#8B0000' }}>No data</Typography>
+        <Typography sx={{ mt: 2, textAlign: 'center', color: '#222222' }}>No data</Typography>
       ) : (
         <Box className="table-container">
-          <Table sx={{ border: '1px solid #2E8B57' }}>
+          <Table sx={{ border: '1px solid #1a2a44' }}>
             <TableHead>
-              <TableRow sx={{ bgcolor: '#2E8B57' }}>
+              <TableRow sx={{ bgcolor: '#1a2a44' }}>
                 <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Name</TableCell>
                 <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Type</TableCell>
                 {user.role === 'Admin' && <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Actions</TableCell>}
@@ -104,23 +104,23 @@ function RecordsPage({ user }) {
             <TableBody>
               {records.map((record) => (
                 <TableRow key={record.id}>
-                  <TableCell sx={{ border: '1px solid #2E8B57' }}>
+                  <TableCell sx={{ border: '1px solid #1a2a44' }}>
                     <Link
                       to={
                         record.type === 'Milk' ? `/milk/${record.id}/${record.name.replace(/ /g, '-')}` :
                         record.type === 'Rent' ? `/rent/${record.id}/${record.name.replace(/ /g, '-')}` :
                         record.type === 'Bill' ? `/bills/${record.id}/${record.name.replace(/ /g, '-')}` : `/record/${record.id}`
                       }
-                      style={{ textDecoration: 'none', color: '#2E8B57' }}
+                      style={{ textDecoration: 'none', color: '#1a2a44' }}
                     >
                       {record.name}
                     </Link>
                   </TableCell>
-                  <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{record.type}</TableCell>
+                  <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{record.type}</TableCell>
                   {user.role === 'Admin' && (
-                    <TableCell sx={{ border: '1px solid #2E8B57' }}>
+                    <TableCell sx={{ border: '1px solid #1a2a44' }}>
                       <IconButton onClick={() => handleDelete(record.id)} disabled={loading}>
-                        <Delete sx={{ color: '#FF4500' }} />
+                        <Delete sx={{ color: '#1a2a44' }} />
                       </IconButton>
                     </TableCell>
                   )}
@@ -131,7 +131,7 @@ function RecordsPage({ user }) {
         </Box>
       )}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle sx={{ color: '#8B0000' }}>Create New Record</DialogTitle>
+        <DialogTitle sx={{ color: '#222222' }}>Create New Record</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <TextField
@@ -141,7 +141,7 @@ function RecordsPage({ user }) {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
-              sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
             />
             <Select
               label="Type"
@@ -149,7 +149,7 @@ function RecordsPage({ user }) {
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value })}
               required
-              sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiSelect-select': { color: '#2E8B57' } }}
+              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiSelect-select': { color: '#1a2a44' } }}
             >
               <MenuItem value="">Select Type</MenuItem>
               <MenuItem value="Milk">Milk</MenuItem>
@@ -157,8 +157,8 @@ function RecordsPage({ user }) {
               <MenuItem value="Rent">Rent</MenuItem>
             </Select>
             <DialogActions>
-              <Button onClick={handleCloseDialog} sx={{ color: '#8B0000' }}>Cancel</Button>
-              <Button type="submit" variant="contained" sx={{ bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+              <Button onClick={handleCloseDialog} sx={{ color: '#222222' }}>Cancel</Button>
+              <Button type="submit" variant="contained" sx={{ bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
                 Create
               </Button>
             </DialogActions>

@@ -60,16 +60,16 @@ function MilkHistoryPage({ user }) {
 
   return (
     <Box className="milk-container">
-      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
+      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
         Milk History
       </Typography>
-      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
-      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
+      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
+      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
       <Box sx={{ mb: 2 }}>
         <Select
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
-          sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiSelect-select': { color: '#2E8B57' } }}
+          sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiSelect-select': { color: '#1a2a44' } }}
         >
           {months.map(month => (
             <MenuItem key={month} value={month}>{new Date(`${month}-01`).toLocaleString('default', { month: 'long', year: 'numeric' })}</MenuItem>
@@ -77,12 +77,12 @@ function MilkHistoryPage({ user }) {
         </Select>
       </Box>
       {milkEntries.length === 0 ? (
-        <Typography sx={{ margin: '2rem auto', textAlign: 'center', color: '#8B0000', bgcolor: '#fff', padding: '20px', maxWidth: '992px' }}>No data for {selectedMonth}</Typography>
+        <Typography sx={{ margin: '2rem auto', textAlign: 'center', color: '#222222', bgcolor: '#fff', padding: '20px', maxWidth: '992px' }}>No data for {selectedMonth}</Typography>
       ) : (
         <Box className="table-container logs-table-container">
-          <Table sx={{ border: '1px solid #2E8B57' }}>
+          <Table sx={{ border: '1px solid #1a2a44' }}>
             <TableHead>
-              <TableRow sx={{ bgcolor: '#2E8B57' }}>
+              <TableRow sx={{ bgcolor: '#1a2a44' }}>
                 <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Date</TableCell>
                 <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Quantity (Liters)</TableCell>
                 <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Status</TableCell>
@@ -91,14 +91,14 @@ function MilkHistoryPage({ user }) {
             <TableBody>
               {milkEntries.map((entry) => (
                 <TableRow key={entry.id}>
-                  <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{new Date(entry.date).toLocaleDateString()}</TableCell>
-                  <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.quantityLiters}</TableCell>
-                  <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.status || '-'}</TableCell>
+                  <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{new Date(entry.date).toLocaleDateString()}</TableCell>
+                  <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.quantityLiters}</TableCell>
+                  <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.status || '-'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          <Box sx={{ mt: 2, textAlign: 'right', color: '#2E8B57' }}>
+          <Box sx={{ mt: 2, textAlign: 'right', color: '#1a2a44' }}>
             <Typography>Total Quantity: {totalQuantity} Liters</Typography>
             <Typography>Total Cost: {totalCost} Rs</Typography>
             <Typography>Total Leaves: {totalLeaves}</Typography>

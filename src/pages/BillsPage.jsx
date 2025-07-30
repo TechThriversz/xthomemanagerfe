@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, TextField, Button, Alert, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress } from '@mui/material';
+import { Box, Typography, Alert, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { getBills, createBill, deleteBill, getRecords } from '../services/api';
-import { CONFIG } from '../../config'; // Import the config
+import { CONFIG } from '../../config';
 import '../App.css';
 
 function BillsPage({ user }) {
@@ -18,6 +18,7 @@ function BillsPage({ user }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const { R2_BASE_URL } = CONFIG;
 
@@ -35,7 +36,6 @@ function BillsPage({ user }) {
     setLoading(true);
     try {
       const response = await getBills(recordId);
-      console.log('FetchBillEntries Response:', response.data); // Log the full response
       setBillEntries(response.data || []);
       setError('');
     } catch (err) {
@@ -73,11 +73,11 @@ function BillsPage({ user }) {
       formData.append('referenceNumber', billForm.referenceNumber);
       formData.append('adminId', user.id);
       if (billForm.file) formData.append('file', billForm.file);
-      const response = await createBill(formData); // Capture response
-      console.log('CreateBill Response:', response.data); // Log the response
+      const response = await createBill(formData);
       setBillForm({ month: null, amount: '', referenceNumber: '', file: null });
       setSuccess('Bill entry added');
       fetchBillEntries();
+      setOpenDialog(false);
     } catch (err) {
       setError('Failed to add bill entry: ' + (err.response?.data || err.message));
     } finally {
@@ -112,65 +112,34 @@ function BillsPage({ user }) {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box className="bills-container">
-        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
+        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
           {recordName || 'Loading...'} Records
         </Typography>
-        {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#2E8B57', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
-        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
-        <Box className="form-container bills-add-form">
-          <Typography variant="h6" sx={{ color: '#8B0000' }}>Add Electricity Bill</Typography>
-          <form onSubmit={handleBillSubmit}>
-            <DatePicker
-              label="Month"
-              views={['year', 'month']}
-              value={billForm.month}
-              onChange={(date) => setBillForm({ ...billForm, month: date })}
-              renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }} />}
-            />
-            <TextField
-              label="Amount (Rs)"
-              type="number"
-              fullWidth
-              margin="normal"
-              value={billForm.amount}
-              onChange={(e) => setBillForm({ ...billForm, amount: e.target.value })}
-              required
-              sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
-            />
-            <TextField
-              label="Reference Number"
-              fullWidth
-              margin="normal"
-              value={billForm.referenceNumber}
-              onChange={(e) => setBillForm({ ...billForm, referenceNumber: e.target.value })}
-              required
-              sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
-            />
-            <TextField
-              label="Upload Bill Image"
-              type="file"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              margin="normal"
-              onChange={(e) => setBillForm({ ...billForm, file: e.target.files[0] })}
-              sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
-            />
-            <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
-              Add Bill
-            </Button>
-          </form>
+        {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#1a2a44', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
+        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Button variant="contained" sx={{ bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} onClick={() => setOpenDialog(true)}>
+            Create
+          </Button>
         </Box>
         {billEntries.length === 0 ? (
-          <Typography sx={{ margin: '2rem auto', textAlign: 'center', color: '#8B0000', bgcolor: '#fff', padding: '20px', maxWidth: '992px' }}>No data</Typography>
+          <Box sx={{ border: '2px dotted #1a2a44', minHeight: '350px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+            <Box sx={{ textAlign: 'center', color: '#222222' }}>
+              <Typography>There is no data to show add some to show data</Typography>
+            </Box>
+            <Button variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} onClick={() => setOpenDialog(true)}>
+              Create
+            </Button>
+          </Box>
         ) : (
           <Box className="table-container logs-table-container">
-            <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
+            <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
               Bill Records
             </Typography>
-            <Table sx={{ border: '1px solid #2E8B57' }}>
+            <Table sx={{ border: '1px solid #1a2a44' }}>
               <TableHead>
-                <TableRow sx={{ bgcolor: '#2E8B57' }}>
+                <TableRow sx={{ bgcolor: '#1a2a44' }}>
                   <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Month</TableCell>
                   <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Month Name</TableCell>
                   <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Amount (Rs)</TableCell>
@@ -182,12 +151,11 @@ function BillsPage({ user }) {
               <TableBody>
                 {billEntries.map((entry) => (
                   <TableRow key={entry.id}>
-                    <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.month}</TableCell>
-                    <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{getMonthName(entry.month)}</TableCell>
-                    <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.amount}</TableCell>
-                    <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.referenceNumber}</TableCell>
-                    <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>
-                      {console.log('FilePath in render:', entry.filePath)} {/* Log during render */}
+                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.month}</TableCell>
+                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{getMonthName(entry.month)}</TableCell>
+                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.amount}</TableCell>
+                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.referenceNumber}</TableCell>
+                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>
                       {entry.filePath && (
                         <img
                           src={`${R2_BASE_URL}/${entry.filePath}`}
@@ -200,7 +168,7 @@ function BillsPage({ user }) {
                     <TableCell>
                       {user.role === 'Admin' && (
                         <IconButton onClick={() => handleDelete(entry.id)} disabled={loading}>
-                          <Delete sx={{ color: '#FF4500' }} />
+                          <Delete sx={{ color: '#1a2a44' }} />
                         </IconButton>
                       )}
                     </TableCell>
@@ -210,21 +178,55 @@ function BillsPage({ user }) {
             </Table>
           </Box>
         )}
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+          <DialogTitle sx={{ bgcolor: '#1a2a44', color: '#FFF' }}>Add Electricity Bill</DialogTitle>
+          <DialogContent>
+            <DatePicker
+              label="Month"
+              views={['year', 'month']}
+              value={billForm.month}
+              onChange={(date) => setBillForm({ ...billForm, month: date })}
+              renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }} />}
+            />
+            <TextField
+              label="Amount (Rs)"
+              type="number"
+              fullWidth
+              margin="normal"
+              value={billForm.amount}
+              onChange={(e) => setBillForm({ ...billForm, amount: e.target.value })}
+              required
+              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
+            />
+            <TextField
+              label="Reference Number"
+              fullWidth
+              margin="normal"
+              value={billForm.referenceNumber}
+              onChange={(e) => setBillForm({ ...billForm, referenceNumber: e.target.value })}
+              required
+              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
+            />
+            <TextField
+              label="Upload Bill Image"
+              type="file"
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              margin="normal"
+              onChange={(e) => setBillForm({ ...billForm, file: e.target.files[0] })}
+              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)} sx={{ color: '#1a2a44' }}>Cancel</Button>
+            <Button onClick={handleBillSubmit} variant="contained" sx={{ bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
+              Add
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </LocalizationProvider>
   );
 }
-
-// Helper functions
-const getMonthName = (monthString) => {
-  const [year, month] = monthString.split('-');
-  return new Date(year, month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
-};
-
-const handleImageClick = (filePath) => {
-  if (filePath) {
-    window.open(`${R2_BASE_URL}/${filePath}`, '_blank');
-  }
-};
 
 export default BillsPage;

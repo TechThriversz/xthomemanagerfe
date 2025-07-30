@@ -38,11 +38,11 @@ function InviteViewer({ user }) {
 
   return (
     <Box className="form-container inivte-container">
-      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000' }}>
+      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222' }}>
         Invite Viewer
       </Typography>
-      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#2E8B57', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#1a2a44', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
       <form onSubmit={handleSubmit}>
         <TextField
           label="Viewer Email"
@@ -51,7 +51,7 @@ function InviteViewer({ user }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+          sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
         />
         <Select
           label="Record"
@@ -59,7 +59,7 @@ function InviteViewer({ user }) {
           value={recordName}
           onChange={(e) => setRecordName(e.target.value)}
           required
-          sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiSelect-select': { color: '#2E8B57' } }}
+          sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiSelect-select': { color: '#1a2a44' } }}
         >
           <MenuItem value="">Select Record</MenuItem>
           {records.map((record) => (
@@ -70,7 +70,7 @@ function InviteViewer({ user }) {
           type="submit"
           variant="contained"
           fullWidth
-          sx={{ mt: 2, py: 1.5, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }}
+          sx={{ mt: 2, py: 1.5, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }}
         >
           Invite
         </Button>
