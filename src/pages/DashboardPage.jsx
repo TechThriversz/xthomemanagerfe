@@ -107,6 +107,13 @@ function DashboardPage({ user }) {
     { name: 'Prescription', value: 3 },
   ];
 
+  const cardStyles = [
+  { background: 'linear-gradient(135deg, #2563EB, #3B82F6)' },
+  { background: 'linear-gradient(135deg, #059669, #10B981)' },
+  { background: 'linear-gradient(135deg, #7C3AED, #8B5CF6)' },
+  { background: 'linear-gradient(135deg, #D97706, #F59E0B)' }
+];
+
   return (
     <Box sx={{ p: 4, bgcolor: '#F3F4F6', minHeight: '100vh' }}>
       {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
@@ -116,55 +123,55 @@ function DashboardPage({ user }) {
         </Box>
       ) : (
         <>
-          <Typography variant="h4" gutterBottom sx={{ color: '#1E3A8A', fontWeight: 700, mb: 4 }}>
-            Dashboard Overview
-          </Typography>
+    <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+  <Box>
+    <Typography variant="h5" fontWeight="bold">
+      {(() => {
+        const hour = new Date().getHours();
+        if (hour < 12) return `Good Morning, ${user?.fullName || 'User'}!`;
+        if (hour < 18) return `Good Afternoon, ${user?.fullName || 'User'}!`;
+        return `Good Evening, ${user?.fullName || 'User'}!`;
+      })()}
+    </Typography>
+    <Typography variant="subtitle1">Welcome back to your dashboard.</Typography>
+  </Box>
+  <Box textAlign="right">
+    <Typography variant="body1">
+      {new Date().toLocaleDateString('en-PK', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      })}
+    </Typography>
+    <Typography variant="body2">
+      {new Date().toLocaleTimeString('en-PK')}
+    </Typography>
+  </Box>
+</Box>
 
           {/* KPI Cards */}
-          <Grid container spacing={3} sx={{ mb: 4, width: 'calc(100% - 250px)' }}>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ bgcolor: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%)', color: '#FFFFFF', borderRadius: 2, boxShadow: 3, '&:hover': { boxShadow: 6 } }}>
-                <CardContent sx={{ p: 2 }}>
-                  <AttachMoney sx={{ fontSize: 40, color: '#93C5FD' }} />
-                  <Typography variant="body2" sx={{ opacity: 0.7, mt: 1 }}>Total Monthly Expense</Typography>
-                  <Typography variant="h6">Rs {totalExpense.toLocaleString()}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ bgcolor: 'linear-gradient(135deg, #065F46 0%, #10B981 100%)', color: '#FFFFFF', borderRadius: 2, boxShadow: 3, '&:hover': { boxShadow: 6 } }}>
-                <CardContent sx={{ p: 2 }}>
-                  <People sx={{ fontSize: 40, color: '#6EE7B7' }} />
-                  <Typography variant="body2" sx={{ opacity: 0.7, mt: 1 }}>Active Family Members</Typography>
-                  <Typography variant="h6">{dashboardSummary.activeFamilyMembers || 6} Members</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ bgcolor: 'linear-gradient(135deg, #6B21A8 0%, #8B5CF6 100%)', color: '#FFFFFF', borderRadius: 2, boxShadow: 3, '&:hover': { boxShadow: 6 } }}>
-                <CardContent sx={{ p: 2 }}>
-                  <Lock sx={{ fontSize: 40, color: '#C4B5FD' }} />
-                  <Typography variant="body2" sx={{ opacity: 0.7, mt: 1 }}>Total Stored Passwords</Typography>
-                  <Typography variant="h6">{dashboardSummary.totalPasswords || 47}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ bgcolor: 'linear-gradient(135deg, #D97706 0%, #F59E0B 100%)', color: '#FFFFFF', borderRadius: 2, boxShadow: 3, '&:hover': { boxShadow: 6 } }}>
-                <CardContent sx={{ p: 2 }}>
-                  <Healing sx={{ fontSize: 40, color: '#FCD34D' }} />
-                  <Typography variant="body2" sx={{ opacity: 0.7, mt: 1 }}>Medical Records Count</Typography>
-                  <Typography variant="h6">{dashboardSummary.medicalRecords || 12}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+    <Grid container spacing={3} sx={{ mb: 4 }}>
+  {[
+    { icon: <AttachMoney sx={{ fontSize: 40, color: '#BFDBFE' }} />, label: 'Total Monthly Expense', value: `Rs ${totalExpense.toLocaleString()}` },
+    { icon: <People sx={{ fontSize: 40, color: '#A7F3D0' }} />, label: 'Active Family Members', value: `${dashboardSummary.activeFamilyMembers || 6} Members` },
+    { icon: <Lock sx={{ fontSize: 40, color: '#DDD6FE' }} />, label: 'Total Stored Passwords', value: dashboardSummary.totalPasswords || 47 },
+    { icon: <Healing sx={{ fontSize: 40, color: '#FDE68A' }} />, label: 'Medical Records Count', value: dashboardSummary.medicalRecords || 12 }
+  ].map((item, i) => (
+    <Grid item xs={12} sm={6} md={3} key={i}>
+      <Card sx={{ ...cardStyles[i], color: '#fff', borderRadius: 2, boxShadow: 3, '&:hover': { boxShadow: 6 } }}>
+        <CardContent>
+          {item.icon}
+          <Typography variant="body2" sx={{ opacity: 0.7, mt: 1 }}>{item.label}</Typography>
+          <Typography variant="h6">{item.value}</Typography>
+        </CardContent>
+      </Card>
+    </Grid>
+  ))}
+</Grid>
 
           {/* Milk Section */}
           <Typography variant="h5" gutterBottom sx={{ color: '#1E3A8A', fontWeight: 700, mb: 3 }}>
             Milk Analytics
           </Typography>
-          <Grid container spacing={3} sx={{ mb: 4, width: 'calc(100% - 250px)' }}>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={6}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Milk Cost per Month</Typography>
@@ -202,7 +209,7 @@ function DashboardPage({ user }) {
           <Typography variant="h5" gutterBottom sx={{ color: '#1E3A8A', fontWeight: 700, mb: 3 }}>
             Bills Analytics
           </Typography>
-          <Grid container spacing={3} sx={{ mb: 4, width: 'calc(100% - 250px)' }}>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={12}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Electricity Bill History</Typography>
@@ -224,7 +231,7 @@ function DashboardPage({ user }) {
           <Typography variant="h5" gutterBottom sx={{ color: '#1E3A8A', fontWeight: 700, mb: 3 }}>
             Rent Analytics
           </Typography>
-          <Grid container spacing={3} sx={{ mb: 4, width: 'calc(100% - 250px)' }}>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={12}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Rent by Property</Typography>
@@ -246,7 +253,7 @@ function DashboardPage({ user }) {
           <Typography variant="h5" gutterBottom sx={{ color: '#1E3A8A', fontWeight: 700, mb: 3 }}>
             Expense Overview
           </Typography>
-          <Grid container spacing={3} sx={{ mb: 4, width: 'calc(100% - 250px)' }}>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={12}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Expense Breakdown</Typography>
@@ -278,7 +285,7 @@ function DashboardPage({ user }) {
           <Typography variant="h5" gutterBottom sx={{ color: '#1E3A8A', fontWeight: 700, mb: 3 }}>
             Family Insights
           </Typography>
-          <Grid container spacing={3} sx={{ mb: 4, width: 'calc(100% - 250px)' }}>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={6}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Family Member Distribution</Typography>
@@ -317,7 +324,7 @@ function DashboardPage({ user }) {
           <Typography variant="h5" gutterBottom sx={{ color: '#1E3A8A', fontWeight: 700, mb: 3 }}>
             Password Insights
           </Typography>
-          <Grid container spacing={3} sx={{ mb: 4, width: 'calc(100% - 250px)' }}>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={6}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Passwords Stored by Category</Typography>
@@ -355,7 +362,7 @@ function DashboardPage({ user }) {
           <Typography variant="h5" gutterBottom sx={{ color: '#1E3A8A', fontWeight: 700, mb: 3 }}>
             Medical Insights
           </Typography>
-          <Grid container spacing={3} sx={{ mb: 4, width: 'calc(100% - 250px)' }}>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={6}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Records by Member</Typography>

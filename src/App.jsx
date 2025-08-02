@@ -69,7 +69,7 @@ function App() {
           <Sidebar user={user} currentRecordId={currentRecordId} /> {/* Pass currentRecordId */}
         </>
       )}
-      <Box id="root" className="content-container">
+      <Box id="root" className={`content-container ${user ? 'with-sidebar' : 'no-sidebar'}`}>
         <Routes>
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/register" element={<Register onRegister={handleLogin} />} />

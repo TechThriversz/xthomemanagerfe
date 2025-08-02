@@ -9,19 +9,23 @@
 }
 
 .content-container {
-    border-radius: 8px;
-    padding: 2rem;
-    margin-top: 80px !important; /* Matches TopBar height + extra space */
-    display: flex;
-    flex-grow: 1;
-    margin-left: 250px; /* Match Sidebar width exactly */
-    min-height: calc(100vh - 80px - 4rem); /* Adjust for TopBar and padding */
-    transition: margin-left 0.3s ease; /* Smooth transition if sidebar width changes */
+  padding: 2rem;
+  margin-top: 80px;
+  min-height: calc(100vh - 80px - 4rem);
+  transition: margin-left 0.3s ease;
 }
-.dashboard-wrapper {
+
+.with-sidebar {
+  margin-left: 250px !important;
+}
+
+.no-sidebar {
+  margin-left: 0;
+}
+/* .dashboard-wrapper {
     width: calc(100% - 250px) !important;
     max-width: none !important;
-}
+} */
 /* Ensure content adjusts if sidebar is hidden or resized */
 @media (max-width: 768px) {
     .content-container {
@@ -132,7 +136,5 @@ body {
 }
 
 @media (min-width: 769px) {
-    .content-container {
-        margin-left: 250px  !important; /* Ensure consistency with Sidebar width */
-    }
+ 
 }
