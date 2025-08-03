@@ -16,10 +16,10 @@ function Login({ onLogin }) {
     setLoading(true);
     try {
       const res = await login({ email, password });
-      console.log('Login: Response:', res.data);
+      console.log('Login Response:', res.data);
       const { user, token } = res.data;
-      if (!user.id) {
-        console.error('Login: No user.id in response');
+      if (!user?.id) {
+        console.error('Login: No user.id in response', user);
         setError('Login failed: User ID missing');
         setLoading(false);
         return;

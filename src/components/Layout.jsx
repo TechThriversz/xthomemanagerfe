@@ -13,10 +13,10 @@ function Layout({ user, onLogout, children }) {
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }} className="layout-container">
       <CssBaseline />
       <TopBar user={user} onLogout={onLogout} />
-      <Sidebar user={user} currentRecordId={null} />
+      <Sidebar user={user} mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
       <Box
         component="main"
         sx={{
@@ -26,7 +26,8 @@ function Layout({ user, onLogout, children }) {
           ml: { sm: `${drawerWidth}px` },
           mt: { xs: '64px', sm: '64px' }, // Adjust for TopBar height
           bgcolor: '#F5F6FA',
-          minHeight: '100vh',
+          minHeight: 'calc(100vh - 64px)', // Adjust for TopBar height
+        
         }}
       >
         {children}

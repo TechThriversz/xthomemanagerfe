@@ -2,68 +2,77 @@ import { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Card, CardContent, CircularProgress } from '@mui/material';
 import { AttachMoney, People, Lock, Healing } from '@mui/icons-material';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getRecords, getMilkAnalytics, getBillsAnalytics, getRentAnalytics, getDashboardSummary } from '../services/api';
 import '../App.css';
 
-function DashboardPage({ user }) {
-  const [records, setRecords] = useState([]);
-  const [analytics, setAnalytics] = useState({ totalCost: 0, totalRent: 0, totalBills: 0 });
-  const [dashboardSummary, setDashboardSummary] = useState({});
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+// Separate TimeDisplay component to isolate time updates
+const TimeDisplay = () => {
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    if (!user?.id) {
-      setError('User not authenticated. Please log in again.');
-      return;
-    }
-    fetchData();
-  }, [user]);
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // Update every second
+    return () => clearInterval(timer);
+  }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [recordsRes, summaryRes] = await Promise.all([getRecords(), getDashboardSummary()]);
-      setRecords(recordsRes.data || []);
-      setDashboardSummary(summaryRes.data || {});
-      const analyticsData = { totalCost: 0, totalRent: 0, totalBills: 0 };
+  return (
+    <Box textAlign="right">
+      <Typography variant="body1">
+        {currentTime.toLocaleDateString('en-PK', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+      </Typography>
+      <Typography variant="body2">
+        {currentTime.toLocaleTimeString('en-PK')}
+      </Typography>
+    </Box>
+  );
+};
 
-      for (const record of recordsRes.data) {
-        try {
-          if (record.type === 'Milk') {
-            const analyticsRes = await getMilkAnalytics(record.id);
-            analyticsData.totalCost += analyticsRes.data.totalCost || 0;
-          } else if (record.type === 'Bill') {
-            const analyticsRes = await getBillsAnalytics(record.id);
-            analyticsData.totalBills += analyticsRes.data.totalAmount || 0;
-          } else if (record.type === 'Rent') {
-            const analyticsRes = await getRentAnalytics(record.id);
-            analyticsData.totalRent += analyticsRes.data.totalAmount || 0;
-          }
-        } catch (err) {
-          console.error(`Failed to fetch analytics for record ${record.id}:`, err);
-        }
+function DashboardPage({ user }) {
+  const [dashboardSummary, setDashboardSummary] = useState({});
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true); // Start with loading true
+  const [analytics, setAnalytics] = useState({ totalCost: 5000, totalRent: 3000, totalBills: 2000 }); // Mock data
+  const [rentByPropertyData, setRentByPropertyData] = useState([
+    { name: 'Property 1', value: 1500 },
+    { name: 'Property 2', value: 1500 },
+  ]); // Mock data
+
+  // Handle authentication and initial data load
+  useEffect(() => {
+    const checkAuthentication = () => {
+      if (!user?.id) {
+        setError('User not authenticated. Please log in again.');
+        setLoading(false);
+        return;
       }
-      setAnalytics(analyticsData);
-      setError('');
-    } catch (err) {
-      setError('Failed to fetch dashboard data: ' + (err.response?.data || err.message));
-    } finally {
-      setLoading(false);
-    }
-  };
+      setLoading(true);
+      // Simulate API delay with mock data
+      setTimeout(() => {
+        setDashboardSummary({
+          activeFamilyMembers: 6,
+          totalPasswords: 47,
+          medicalRecords: 12,
+        });
+        setLoading(false);
+      }, 1000); // 1-second delay to mimic API call
+    };
 
-  // Real data for Milk, Rent, Bills
+    checkAuthentication();
+  }, [user]); // Only re-run when user changes
+
+  // Real data for Milk, Rent, Bills (using mock data)
   const totalExpense = analytics.totalCost + analytics.totalRent + analytics.totalBills || 0;
-  const milkCostData = [{ name: 'Jan', cost: 5000 }, { name: 'Feb', cost: 5200 }, { name: 'Mar', cost: 4800 }]; // Placeholder, replace with API data
+  const milkCostData = [{ name: 'Jan', cost: 5000 }, { name: 'Feb', cost: 5200 }, { name: 'Mar', cost: 4800 }]; // Mock data
   const boughtVsLeaveData = [
     { name: 'Bought', value: 70 },
     { name: 'Leave', value: 30 },
   ];
-  const billHistoryData = [{ name: 'Jan', amount: 3000 }, { name: 'Feb', amount: 3200 }, { name: 'Mar', amount: 2800 }]; // Placeholder
-  const rentByPropertyData = records
-    .filter(r => r.type === 'Rent')
-    .map(async (r, index) => ({ name: `Property ${index + 1}`, value: (await getRentAnalytics(r.id)).data.totalAmount || 0 }));
+  const billHistoryData = [{ name: 'Jan', amount: 2000 }, { name: 'Feb', amount: 2100 }, { name: 'Mar', amount: 1800 }]; // Mock data
   const expenseBreakdownData = [
     { name: 'Milk', value: analytics.totalCost },
     { name: 'Rent', value: analytics.totalRent },
@@ -108,11 +117,11 @@ function DashboardPage({ user }) {
   ];
 
   const cardStyles = [
-  { background: 'linear-gradient(135deg, #2563EB, #3B82F6)' },
-  { background: 'linear-gradient(135deg, #059669, #10B981)' },
-  { background: 'linear-gradient(135deg, #7C3AED, #8B5CF6)' },
-  { background: 'linear-gradient(135deg, #D97706, #F59E0B)' }
-];
+    { background: 'linear-gradient(135deg, #2563EB, #3B82F6)' },
+    { background: 'linear-gradient(135deg, #059669, #10B981)' },
+    { background: 'linear-gradient(135deg, #7C3AED, #8B5CF6)' },
+    { background: 'linear-gradient(135deg, #D97706, #F59E0B)' }
+  ];
 
   return (
     <Box sx={{ p: 4, bgcolor: '#F3F4F6', minHeight: '100vh' }}>
@@ -123,56 +132,47 @@ function DashboardPage({ user }) {
         </Box>
       ) : (
         <>
-    <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-  <Box>
-    <Typography variant="h5" fontWeight="bold">
-      {(() => {
-        const hour = new Date().getHours();
-        if (hour < 12) return `Good Morning, ${user?.fullName || 'User'}!`;
-        if (hour < 18) return `Good Afternoon, ${user?.fullName || 'User'}!`;
-        return `Good Evening, ${user?.fullName || 'User'}!`;
-      })()}
-    </Typography>
-    <Typography variant="subtitle1">Welcome back to your dashboard.</Typography>
-  </Box>
-  <Box textAlign="right">
-    <Typography variant="body1">
-      {new Date().toLocaleDateString('en-PK', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      })}
-    </Typography>
-    <Typography variant="body2">
-      {new Date().toLocaleTimeString('en-PK')}
-    </Typography>
-  </Box>
-</Box>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+            <Box>
+              <Typography variant="h5" fontWeight="bold">
+                {(() => {
+                  const hour = new Date().getHours(); // Use new Date() directly for greeting
+                  if (hour < 12) return `Good Morning, ${user?.fullName || 'User'}!`;
+                  if (hour < 18) return `Good Afternoon, ${user?.fullName || 'User'}!`;
+                  return `Good Evening, ${user?.fullName || 'User'}!`;
+                })()}
+              </Typography>
+              <Typography variant="subtitle1">Welcome back to your dashboard.</Typography>
+            </Box>
+            <TimeDisplay />
+          </Box>
 
           {/* KPI Cards */}
-    <Grid container spacing={3} sx={{ mb: 4 }}>
-  {[
-    { icon: <AttachMoney sx={{ fontSize: 40, color: '#BFDBFE' }} />, label: 'Total Monthly Expense', value: `Rs ${totalExpense.toLocaleString()}` },
-    { icon: <People sx={{ fontSize: 40, color: '#A7F3D0' }} />, label: 'Active Family Members', value: `${dashboardSummary.activeFamilyMembers || 6} Members` },
-    { icon: <Lock sx={{ fontSize: 40, color: '#DDD6FE' }} />, label: 'Total Stored Passwords', value: dashboardSummary.totalPasswords || 47 },
-    { icon: <Healing sx={{ fontSize: 40, color: '#FDE68A' }} />, label: 'Medical Records Count', value: dashboardSummary.medicalRecords || 12 }
-  ].map((item, i) => (
-    <Grid item xs={12} sm={6} md={3} key={i}>
-      <Card sx={{ ...cardStyles[i], color: '#fff', borderRadius: 2, boxShadow: 3, '&:hover': { boxShadow: 6 } }}>
-        <CardContent>
-          {item.icon}
-          <Typography variant="body2" sx={{ opacity: 0.7, mt: 1 }}>{item.label}</Typography>
-          <Typography variant="h6">{item.value}</Typography>
-        </CardContent>
-      </Card>
-    </Grid>
-  ))}
-</Grid>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {[
+              { icon: <AttachMoney sx={{ fontSize: 40, color: '#BFDBFE' }} />, label: 'Total Monthly Expense', value: `Rs ${totalExpense.toLocaleString()}` },
+              { icon: <People sx={{ fontSize: 40, color: '#A7F3D0' }} />, label: 'Active Family Members', value: `${dashboardSummary.activeFamilyMembers || 6} Members` },
+              { icon: <Lock sx={{ fontSize: 40, color: '#DDD6FE' }} />, label: 'Total Stored Passwords', value: dashboardSummary.totalPasswords || 47 },
+              { icon: <Healing sx={{ fontSize: 40, color: '#FDE68A' }} />, label: 'Medical Records Count', value: dashboardSummary.medicalRecords || 12 }
+            ].map((item, i) => (
+              <Grid item size={{ xs: 12, sm: 6, md: 3 }} key={i}>
+                <Card sx={{ ...cardStyles[i], color: '#fff', borderRadius: 2, boxShadow: 3, '&:hover': { boxShadow: 6 } }}>
+                  <CardContent>
+                    {item.icon}
+                    <Typography variant="body2" sx={{ opacity: 0.7, mt: 1 }}>{item.label}</Typography>
+                    <Typography variant="h6">{item.value}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
 
           {/* Milk Section */}
           <Typography variant="h5" gutterBottom sx={{ color: '#1E3A8A', fontWeight: 700, mb: 3 }}>
             Milk Analytics
           </Typography>
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md: 6 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Milk Cost per Month</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -187,7 +187,7 @@ function DashboardPage({ user }) {
                 </ResponsiveContainer>
               </Box>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md: 6 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Bought vs Leave Days</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -210,7 +210,7 @@ function DashboardPage({ user }) {
             Bills Analytics
           </Typography>
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={12}>
+            <Grid item size={{ xs: 12, md: 12 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Electricity Bill History</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -232,7 +232,7 @@ function DashboardPage({ user }) {
             Rent Analytics
           </Typography>
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={12}>
+            <Grid item size={{ xs: 12, md: 12 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Rent by Property</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -254,7 +254,7 @@ function DashboardPage({ user }) {
             Expense Overview
           </Typography>
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={12}>
+            <Grid item size={{ xs: 12, md: 12 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Expense Breakdown</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -286,7 +286,7 @@ function DashboardPage({ user }) {
             Family Insights
           </Typography>
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md: 6 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Family Member Distribution</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -302,7 +302,7 @@ function DashboardPage({ user }) {
                 </ResponsiveContainer>
               </Box>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md: 6 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Gender Split</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -325,7 +325,7 @@ function DashboardPage({ user }) {
             Password Insights
           </Typography>
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md: 6 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Passwords Stored by Category</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -340,7 +340,7 @@ function DashboardPage({ user }) {
                 </ResponsiveContainer>
               </Box>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md: 6 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 2, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Passwords by Website</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -363,7 +363,7 @@ function DashboardPage({ user }) {
             Medical Insights
           </Typography>
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md: 6 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Records by Member</Typography>
                 <ResponsiveContainer width="100%" height={300}>
@@ -378,7 +378,7 @@ function DashboardPage({ user }) {
                 </ResponsiveContainer>
               </Box>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md: 6 }}>
               <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 2, p: 3, boxShadow: 1, minHeight: 350, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="h6" sx={{ color: '#1E40AF', mb: 2 }}>Medical Visits Timeline</Typography>
                 <ResponsiveContainer width="100%" height={300}>

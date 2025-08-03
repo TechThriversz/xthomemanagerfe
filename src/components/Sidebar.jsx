@@ -13,7 +13,7 @@ function Sidebar({ user, currentRecordId }) {
 
   return (
     <Box sx={{ width: 250, bgcolor: '#1A2A44', color: '#FFF', height: '100vh', position: 'fixed', mt: 8 }}>
-      <List>
+      <List  sx={{ paddingTop: 0 }}>
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/dashboard" sx={{ color: '#FFF', '&.active': { bgcolor: '#2E4057' } }}>
             <ListItemIcon><Dashboard sx={{ color: '#FFD700' }} /></ListItemIcon>

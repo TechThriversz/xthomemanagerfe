@@ -90,7 +90,12 @@ function RecordsPage({ user }) {
         </Box>
       )}
       {records.length === 0 ? (
-        <Typography sx={{ mt: 2, textAlign: 'center', color: '#222222' }}>No data</Typography>
+        <Box className="form-container" sx={{ textAlign: 'center', p: 4 }}>
+          <Typography sx={{ mt: 2, color: '#222222' }}>No Records found</Typography>
+          <Typography sx={{ mt: 1, color: '#666666' }}>
+            It looks like you haven't added any records yet. Let's get started by creating your first record to track your home expenses.
+          </Typography>
+        </Box>
       ) : (
         <Box className="table-container">
           <Table sx={{ border: '1px solid #1a2a44' }}>

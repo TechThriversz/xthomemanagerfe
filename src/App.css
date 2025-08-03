@@ -8,28 +8,22 @@
     min-height: 100vh;
 }
 
-.content-container {
-  padding: 2rem;
-  margin-top: 80px;
-  min-height: calc(100vh - 80px - 4rem);
-  transition: margin-left 0.3s ease;
+.layout-container {
+    width: 100%; /* Ensure full width */
 }
 
 .with-sidebar {
-  margin-left: 250px !important;
+    /* Remove fixed margin-left to allow grid to adjust */
+    margin-left: 0; /* Reset to avoid fixed offset */
 }
 
 .no-sidebar {
-  margin-left: 0;
+    margin-left: 0;
 }
-/* .dashboard-wrapper {
-    width: calc(100% - 250px) !important;
-    max-width: none !important;
-} */
+
 /* Ensure content adjusts if sidebar is hidden or resized */
 @media (max-width: 768px) {
     .content-container {
-        margin-left: 0;
         padding: 1rem;
     }
 }
@@ -96,7 +90,7 @@
 .bills-container {
     padding: 2rem;
 }
-.analytical-boxes-grid {}
+.analytical-boxes-grid {position: relative;}
 
 /* Record Page */
 .record-container {
@@ -114,7 +108,7 @@
     margin: auto;
 }
 .logs-table-container {
-background-color: #ffffff;
+    background-color: #ffffff;
     max-width: 992px;
     width: 100%;
     margin: 50px auto;
@@ -136,5 +130,9 @@ body {
 }
 
 @media (min-width: 769px) {
- 
+    /* Adjust for sidebar if present */
+    .with-sidebar.content-container {
+        margin-left: 250px !important; /* Reintroduce sidebar offset only if needed */
+        width: calc(100% - 250px) !important; /* Subtract sidebar width */
+    }
 }
