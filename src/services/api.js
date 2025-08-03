@@ -42,7 +42,7 @@ export const deleteRecord = (id) => api.delete(`/record/${id}`);
 export const getMilk = (recordId) => api.get(`/milk/${recordId}`);
 export const createMilk = (data) => {
     console.log('createMilk: Sending request with payload:', JSON.stringify(data));
-    return api.post('/milk', data); // Use axios instead of fetch
+    return api.post('/milk', data);
 };
 export const deleteMilk = (id) => api.delete(`/milk/${id}`);
 
@@ -64,7 +64,7 @@ export const deleteRent = (id) => api.delete(`/rent/${id}`);
 
 // Analytics API endpoints
 export const getMilkAnalytics = (recordId, month) => api.get(`/milk/analytics/${recordId}?month=${month}`);
-export const getBillsAnalytics = (recordId, month) => api.get(`/bill/analytics/${recordId}?month=${month}`);
+export const getBillsAnalytics = (recordId, month) => api.get(`/bills/analytics/${recordId}?month=${month}`); // Fixed typo from 'bill' to 'bills'
 export const getRentAnalytics = (recordId, month) => api.get(`/rent/analytics/${recordId}?month=${month}`);
 
 // Settings API endpoints
@@ -73,3 +73,6 @@ export const updateSettings = (settings) => api.post('/settings', settings);
 export const updateUser = (id, formData) => api.put(`/user/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
 });
+
+// Dashboard API endpoints
+export const getDashboardSummary = () => api.get('/dashboard/summary');

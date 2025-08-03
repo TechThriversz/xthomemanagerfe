@@ -8,21 +8,22 @@
     min-height: 100vh;
 }
 
-.content-container {
-    border-radius: 8px;
-    padding: 2rem;
-    margin-top: 80px !important; /* Matches TopBar height + extra space */
-    display: flex;
-    flex-grow: 1;
-    margin-left: 250px; /* Match Sidebar width exactly */
-    min-height: calc(100vh - 80px - 4rem); /* Adjust for TopBar and padding */
-    transition: margin-left 0.3s ease; /* Smooth transition if sidebar width changes */
+.layout-container {
+    width: 100%; /* Ensure full width */
+}
+
+.with-sidebar {
+    /* Remove fixed margin-left to allow grid to adjust */
+    margin-left: 0; /* Reset to avoid fixed offset */
+}
+
+.no-sidebar {
+    margin-left: 0;
 }
 
 /* Ensure content adjusts if sidebar is hidden or resized */
 @media (max-width: 768px) {
     .content-container {
-        margin-left: 0;
         padding: 1rem;
     }
 }
@@ -89,7 +90,7 @@
 .bills-container {
     padding: 2rem;
 }
-.analytical-boxes-grid {}
+.analytical-boxes-grid {position: relative;}
 
 /* Record Page */
 .record-container {
@@ -107,7 +108,7 @@
     margin: auto;
 }
 .logs-table-container {
-background-color: #ffffff;
+    background-color: #ffffff;
     max-width: 992px;
     width: 100%;
     margin: 50px auto;
@@ -127,9 +128,66 @@ body {
     padding: 0;
     overflow-x: hidden; /* Prevent horizontal scroll if sidebar exceeds */
 }
+.sidebar-layout {
+    max-width: 250px;
+    width: 100%;
+    position: fixed;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #FAFAFA;
+    border-right: 1px solid #e0e0e0;
+    padding-top: 64px; /* Adjust for TopBar height */
+}
+.empty-state {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin: auto;
+    padding: 4rem;
+    border-radius: 6px;  
+    background-color:hsl(222deg 71.43% 97.25%);
+    max-width: 800px; 
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+.create-record-button {
+    background-color: #1A2A44 !important; /* Darker button color */
+    color: #FFFFFF; /* White text for contrast */
+    border-radius: 8px;
+    padding: 0.8rem 2.2rem !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+}
+.create-record-button:hover {
+    background-color: #2E4057; /* Slightly lighter on hover */
+    transform: translateY(-2px); /* Subtle lift effect */
+    
+}
+.view-demo-button {
+    background-color: #fff !important; /* Light gray background */
+    color: #1A2A44 !important; /* Dark text for contrast */
+    border-color: #1A2A44 !important;
+    border-radius: 8px;
+    padding: 0.8rem 2.2rem !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease, transform 0.2s ease !important;
+}
+.view-demo-button:hover {
+    background-color: #F0F2F5 !important; /* Lighter hover effect */
+     transform: translateY(-2px); /* Subtle lift effect */
+}
 
 @media (min-width: 769px) {
-    .content-container {
-        margin-left: 250px  !important; /* Ensure consistency with Sidebar width */
+    /* Adjust for sidebar if present */
+    .with-sidebar.content-container {
+        margin-left: 250px !important; /* Reintroduce sidebar offset only if needed */
+        width: calc(100% - 250px) !important; /* Subtract sidebar width */
     }
 }

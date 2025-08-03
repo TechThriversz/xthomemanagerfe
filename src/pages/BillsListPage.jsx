@@ -39,19 +39,19 @@ function BillsListPage({ user }) {
 
   return (
     <Box className="record-container">
-      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000' }}>
+      <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222' }}>
         Bill Records
       </Typography>
-      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
-      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
+      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
+      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
       {records.length === 0 && !loading && (
-        <Typography sx={{ mt: 2, textAlign: 'center', color: '#8B0000' }}>No bill records</Typography>
+        <Typography sx={{ mt: 2, textAlign: 'center', color: '#222222' }}>No bill records</Typography>
       )}
       {records.length > 0 && (
         <Box className="table-container">
-          <Table sx={{ border: '1px solid #2E8B57' }}>
+          <Table sx={{ border: '1px solid #1a2a44' }}>
             <TableHead>
-              <TableRow sx={{ bgcolor: '#2E8B57' }}>
+              <TableRow sx={{ bgcolor: '#1a2a44' }}>
                 <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Name</TableCell>
                 <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Type</TableCell>
               </TableRow>
@@ -59,8 +59,8 @@ function BillsListPage({ user }) {
             <TableBody>
               {records.map((record) => (
                 <TableRow key={record.id} onClick={() => handleRowClick(record.id, record.name)} style={{ cursor: 'pointer' }}>
-                  <TableCell sx={{ border: '1px solid #2E8B57' }}><b>{record.name}</b></TableCell>
-                  <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{record.type}</TableCell>
+                  <TableCell sx={{ border: '1px solid #1a2a44' }}><b>{record.name}</b></TableCell>
+                  <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{record.type}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

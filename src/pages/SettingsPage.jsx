@@ -77,15 +77,15 @@ function SettingsPage({ user, setUser }) {
 
   return (
     <Box className="settings-container">
-      <Typography variant="h4" gutterBottom align="center" sx={{ color: '#8B0000' }}>
+      <Typography variant="h4" gutterBottom align="center" sx={{ color: '#222222' }}>
         Settings
       </Typography>
-      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#2E8B57', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
-      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
+      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#1a2a44', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
+      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
       {user?.role === 'Admin' && (
         <Box className="form-container">
-          <Typography variant="h6" sx={{ color: '#8B0000' }}>Milk Rate</Typography>
+          <Typography variant="h6" sx={{ color: '#222222' }}>Milk Rate</Typography>
           <form onSubmit={handleSettingsSubmit}>
             <TextField
               label="Milk Rate Per Liter (Rs)"
@@ -94,16 +94,16 @@ function SettingsPage({ user, setUser }) {
               margin="normal"
               value={settings.milkRatePerLiter}
               onChange={(e) => setSettings({ ...settings, milkRatePerLiter: e.target.value })}
-              sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
             />
-            <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+            <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
               Update Rate
             </Button>
           </form>
         </Box>
       )}
       <Box className="form-container" sx={{ mt: 4 }}>
-        <Typography variant="h6" sx={{ color: '#8B0000' }}>Profile</Typography>
+        <Typography variant="h6" sx={{ color: '#222222' }}>Profile</Typography>
         {imageUrl && (
           <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
             <img
@@ -124,7 +124,7 @@ function SettingsPage({ user, setUser }) {
             margin="normal"
             value={userForm.fullName}
             onChange={(e) => setUserForm({ ...userForm, fullName: e.target.value })}
-            sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <TextField
             label="New Password"
@@ -133,7 +133,7 @@ function SettingsPage({ user, setUser }) {
             margin="normal"
             value={userForm.password}
             onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-            sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <TextField
             label="Upload Profile Image"
@@ -142,9 +142,9 @@ function SettingsPage({ user, setUser }) {
             fullWidth
             margin="normal"
             onChange={(e) => setUserForm({ ...userForm, image: e.target.files[0] })}
-            sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
-          <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+          <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
             Update Profile
           </Button>
         </form>

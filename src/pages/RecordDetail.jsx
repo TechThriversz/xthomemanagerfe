@@ -121,17 +121,17 @@ function RecordDetail({ user }) {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box>
-        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000' }}>
+        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222' }}>
           Record Details (ID: {recordId})
         </Typography>
-        {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#2E8B57', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
-        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
+        {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#1a2a44', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
+        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
         <Tabs
           value={tab}
           onChange={(e, newValue) => setTab(newValue)}
           centered
-          sx={{ mb: 2, '& .MuiTab-root': { color: '#8B0000' }, '& .Mui-selected': { color: '#FF4500' } }}
+          sx={{ mb: 2, '& .MuiTab-root': { color: '#222222' }, '& .Mui-selected': { color: '#1a2a44' } }}
         >
           <Tab label="Milk" />
           <Tab label="Electricity Bills" />
@@ -139,13 +139,13 @@ function RecordDetail({ user }) {
         </Tabs>
         {tab === 0 && (
           <Box className="form-container">
-            <Typography variant="h6" sx={{ color: '#8B0000' }}>Add Milk Log</Typography>
+            <Typography variant="h6" sx={{ color: '#222222' }}>Add Milk Log</Typography>
             <form onSubmit={handleMilkSubmit}>
               <DatePicker
                 label="Date"
                 value={milkForm.date}
                 onChange={(date) => setMilkForm({ ...milkForm, date })}
-                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }} />}
+                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }} />}
               />
               <TextField
                 label="Quantity (Liters)"
@@ -155,7 +155,7 @@ function RecordDetail({ user }) {
                 value={milkForm.quantityLiters}
                 onChange={(e) => setMilkForm({ ...milkForm, quantityLiters: e.target.value })}
                 required
-                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+                sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
               />
               <TextField
                 label="Status (e.g., Active, Leave)"
@@ -163,19 +163,19 @@ function RecordDetail({ user }) {
                 margin="normal"
                 value={milkForm.status}
                 onChange={(e) => setMilkForm({ ...milkForm, status: e.target.value })}
-                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+                sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
               />
-              <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+              <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
                 Add Milk Log
               </Button>
             </form>
             {milkEntries.length === 0 ? (
-              <Typography sx={{ mt: 2, textAlign: 'center', color: '#8B0000' }}>No data</Typography>
+              <Typography sx={{ mt: 2, textAlign: 'center', color: '#222222' }}>No data</Typography>
             ) : (
               <Box className="table-container">
-                <Table sx={{ border: '1px solid #2E8B57' }}>
+                <Table sx={{ border: '1px solid #1a2a44' }}>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: '#2E8B57' }}>
+                    <TableRow sx={{ bgcolor: '#1a2a44' }}>
                       <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Date</TableCell>
                       <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Quantity (Liters)</TableCell>
                       <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Status</TableCell>
@@ -185,13 +185,13 @@ function RecordDetail({ user }) {
                   <TableBody>
                     {milkEntries.map((entry) => (
                       <TableRow key={entry.id}>
-                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{new Date(entry.date).toLocaleDateString()}</TableCell>
-                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.quantityLiters}</TableCell>
-                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.status || '-'}</TableCell>
+                        <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{new Date(entry.date).toLocaleDateString()}</TableCell>
+                        <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.quantityLiters}</TableCell>
+                        <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.status || '-'}</TableCell>
                         <TableCell>
                           {user.role === 'Admin' && (
                             <IconButton onClick={() => handleDelete('milk', entry.id)} disabled={loading}>
-                              <Delete sx={{ color: '#FF4500' }} />
+                              <Delete sx={{ color: '#1a2a44' }} />
                             </IconButton>
                           )}
                         </TableCell>
@@ -205,14 +205,14 @@ function RecordDetail({ user }) {
         )}
         {tab === 1 && (
           <Box className="form-container">
-            <Typography variant="h6" sx={{ color: '#8B0000' }}>Add Electricity Bill</Typography>
+            <Typography variant="h6" sx={{ color: '#222222' }}>Add Electricity Bill</Typography>
             <form onSubmit={handleBillSubmit}>
               <DatePicker
                 label="Month"
                 views={['year', 'month']}
                 value={billForm.month}
                 onChange={(date) => setBillForm({ ...billForm, month: date })}
-                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }} />}
+                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }} />}
               />
               <TextField
                 label="Amount (Rs)"
@@ -222,7 +222,7 @@ function RecordDetail({ user }) {
                 value={billForm.amount}
                 onChange={(e) => setBillForm({ ...billForm, amount: e.target.value })}
                 required
-                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+                sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
               />
               <TextField
                 label="Reference Number"
@@ -231,7 +231,7 @@ function RecordDetail({ user }) {
                 value={billForm.referenceNumber}
                 onChange={(e) => setBillForm({ ...billForm, referenceNumber: e.target.value })}
                 required
-                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+                sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
               />
               <TextField
                 label="Upload Bill Image"
@@ -240,19 +240,19 @@ function RecordDetail({ user }) {
                 fullWidth
                 margin="normal"
                 onChange={(e) => setBillForm({ ...billForm, file: e.target.files[0] })}
-                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+                sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
               />
-              <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+              <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
                 Add Bill
               </Button>
             </form>
             {billEntries.length === 0 ? (
-              <Typography sx={{ mt: 2, textAlign: 'center', color: '#8B0000' }}>No data</Typography>
+              <Typography sx={{ mt: 2, textAlign: 'center', color: '#222222' }}>No data</Typography>
             ) : (
               <Box className="table-container">
-                <Table sx={{ border: '1px solid #2E8B57' }}>
+                <Table sx={{ border: '1px solid #1a2a44' }}>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: '#2E8B57' }}>
+                    <TableRow sx={{ bgcolor: '#1a2a44' }}>
                       <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Month</TableCell>
                       <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Amount (Rs)</TableCell>
                       <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Reference Number</TableCell>
@@ -262,13 +262,13 @@ function RecordDetail({ user }) {
                   <TableBody>
                     {billEntries.map((entry) => (
                       <TableRow key={entry.id}>
-                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.month}</TableCell>
-                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.amount}</TableCell>
-                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.referenceNumber}</TableCell>
+                        <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.month}</TableCell>
+                        <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.amount}</TableCell>
+                        <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.referenceNumber}</TableCell>
                         <TableCell>
                           {user.role === 'Admin' && (
                             <IconButton onClick={() => handleDelete('bill', entry.id)} disabled={loading}>
-                              <Delete sx={{ color: '#FF4500' }} />
+                              <Delete sx={{ color: '#1a2a44' }} />
                             </IconButton>
                           )}
                         </TableCell>
@@ -282,14 +282,14 @@ function RecordDetail({ user }) {
         )}
         {tab === 2 && (
           <Box className="form-container">
-            <Typography variant="h6" sx={{ color: '#8B0000' }}>Add Rent Log</Typography>
+            <Typography variant="h6" sx={{ color: '#222222' }}>Add Rent Log</Typography>
             <form onSubmit={handleRentSubmit}>
               <DatePicker
                 label="Month"
                 views={['year', 'month']}
                 value={rentForm.month}
                 onChange={(date) => setRentForm({ ...rentForm, month: date })}
-                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }} />}
+                renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }} />}
               />
               <TextField
                 label="Amount (Rs)"
@@ -299,19 +299,19 @@ function RecordDetail({ user }) {
                 value={rentForm.amount}
                 onChange={(e) => setRentForm({ ...rentForm, amount: e.target.value })}
                 required
-                sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+                sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
               />
-              <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }} disabled={loading}>
+              <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
                 Add Rent Log
               </Button>
             </form>
             {rentEntries.length === 0 ? (
-              <Typography sx={{ mt: 2, textAlign: 'center', color: '#8B0000' }}>No data</Typography>
+              <Typography sx={{ mt: 2, textAlign: 'center', color: '#222222' }}>No data</Typography>
             ) : (
               <Box className="table-container">
-                <Table sx={{ border: '1px solid #2E8B57' }}>
+                <Table sx={{ border: '1px solid #1a2a44' }}>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: '#2E8B57' }}>
+                    <TableRow sx={{ bgcolor: '#1a2a44' }}>
                       <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Month</TableCell>
                       <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Amount (Rs)</TableCell>
                       <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Actions</TableCell>
@@ -320,12 +320,12 @@ function RecordDetail({ user }) {
                   <TableBody>
                     {rentEntries.map((entry) => (
                       <TableRow key={entry.id}>
-                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.month}</TableCell>
-                        <TableCell sx={{ color: '#2E8B57', border: '1px solid #2E8B57' }}>{entry.amount}</TableCell>
+                        <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.month}</TableCell>
+                        <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.amount}</TableCell>
                         <TableCell>
                           {user.role === 'Admin' && (
                             <IconButton onClick={() => handleDelete('rent', entry.id)} disabled={loading}>
-                              <Delete sx={{ color: '#FF4500' }} />
+                              <Delete sx={{ color: '#1a2a44' }} />
                             </IconButton>
                           )}
                         </TableCell>

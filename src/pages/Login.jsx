@@ -16,10 +16,10 @@ function Login({ onLogin }) {
     setLoading(true);
     try {
       const res = await login({ email, password });
-      console.log('Login: Response:', res.data);
+      console.log('Login Response:', res.data);
       const { user, token } = res.data;
-      if (!user.id) {
-        console.error('Login: No user.id in response');
+      if (!user?.id) {
+        console.error('Login: No user.id in response', user);
         setError('Login failed: User ID missing');
         setLoading(false);
         return;
@@ -39,15 +39,15 @@ function Login({ onLogin }) {
   return (
     <Box className="login-container">
       <Box className="form-container">
-        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#8B0000' }}>
+        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222' }}>
           Login to XTHomeManager
         </Typography>
         {error && (
-          <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#8B0000' }} onClose={() => setError('')}>
+          <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>
             {error}
           </Alert>
         )}
-        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#FF4500' }} />}
+        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             label="Email"
@@ -57,7 +57,7 @@ function Login({ onLogin }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <TextField
             label="Password"
@@ -67,13 +67,13 @@ function Login({ onLogin }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            sx={{ '& .MuiInputLabel-root': { color: '#8B0000' }, '& .MuiInputBase-input': { color: '#2E8B57' } }}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <Button
             type="submit"
             variant="contained"
             fullWidth
-            sx={{ mt: 2, py: 1.5, bgcolor: '#FF4500', '&:hover': { bgcolor: '#FF6347' } }}
+            sx={{ mt: 2, py: 1.5, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }}
             disabled={loading}
           >
             Login
@@ -81,7 +81,7 @@ function Login({ onLogin }) {
           <Button
             variant="text"
             fullWidth
-            sx={{ mt: 1, color: '#2E8B57' }}
+            sx={{ mt: 1, color: '#1a2a44' }}
             onClick={() => navigate('/register')}
           >
             Register

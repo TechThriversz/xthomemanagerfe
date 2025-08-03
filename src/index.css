@@ -1,6 +1,6 @@
 /* frontend/src/index.css */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+font-family: 'Roboto', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -24,8 +24,11 @@ body {
   min-height: 100vh;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+code, pre {
+  font-family: 'Fira Code', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace !important;
+}
+h1, h2, h3, h4, h5, h6, .title {
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .MuiDrawer-paper {
