@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Alert, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Select, MenuItem } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import { Delete, Add, Visibility, EditDocument } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -59,8 +59,7 @@ function MilkPage({ user }) {
     }
   };
 
-  const handleMilkSubmit = async (e) => {
-    e.preventDefault();
+  const handleMilkSubmit = async () => {
     setLoading(true);
     try {
       const payload = {
@@ -72,9 +71,9 @@ function MilkPage({ user }) {
       };
       await createMilk(payload);
       setMilkForm({ ...milkForm, quantityLiters: '', date: new Date() });
-      setSuccess('Milk entry added');
-      fetchMilkEntries();
+      setSuccess('Milk entry added successfully');
       setOpenDialog(false);
+      fetchMilkEntries();
     } catch (err) {
       setError('Failed to add milk entry: ' + (err.response?.data || err.message));
     } finally {
@@ -82,11 +81,11 @@ function MilkPage({ user }) {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (entryId) => {
     setLoading(true);
     try {
-      await deleteMilk(id);
-      setSuccess('Milk entry deleted');
+      await deleteMilk(recordId, entryId);
+      setSuccess('Milk entry deleted successfully');
       fetchMilkEntries();
     } catch (err) {
       setError('Failed to delete milk entry: ' + (err.response?.data || err.message));
@@ -94,131 +93,200 @@ function MilkPage({ user }) {
       setLoading(false);
     }
   };
-
-  const getDayName = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { weekday: 'long' });
+  
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
   };
-
-  const calculateSummary = () => {
-    const days = milkEntries.length;
-    const totalLiters = milkEntries.reduce((sum, entry) => sum + entry.quantityLiters, 0);
-    const totalCost = milkEntries.reduce((sum, entry) => sum + entry.totalCost, 0);
-    return { days, totalLiters, totalCost };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setMilkForm({ date: new Date(), quantityLiters: '', status: 'Active' });
   };
-
-  const { days, totalLiters, totalCost } = calculateSummary();
-
+  
+  const emptyStateImage = "https://img.freepik.com/premium-photo/spring-flowers-hands-beautiful-bouquet-female-hands_217529-507.jpg";
+  const handleViewDemoData = () => {
+      setSuccess('Simulating adding demo data...');
+      setTimeout(() => {
+          setSuccess('');
+          fetchRecords();
+      }, 2000);
+  };
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box className="milk-container">
-        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
-          {recordName || 'Loading...'} Records
-        </Typography>
-        {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#1a2a44', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
-        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-          <Button variant="contained" sx={{ bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} onClick={() => setOpenDialog(true)}>
-            Create
-          </Button>
-        </Box>
-        {milkEntries.length === 0 ? (
-          <Box sx={{ border: '2px dotted #1a2a44', minHeight: '350px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-            <Box sx={{ textAlign: 'center', color: '#222222' }}>
-              <Typography>There is no data to show add some to show data</Typography>
-            </Box>
-            <Button variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} onClick={() => setOpenDialog(true)}>
-              Create
+    <Box sx={{ p: 3 }}> 
+
+      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FEE2E2', color: '#EF4444' }} onClose={() => setError('')}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#ECFDF5', color: '#10B981' }} onClose={() => setSuccess('')}>{success}</Alert>}
+      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1A2A44' }} />}
+
+      {milkEntries.length === 0 ? (
+        <Box
+    className="empty-state" 
+        >
+
+           <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
+                Milk Entries for {recordName}
+            </Typography>
+          <Typography variant="h6" sx={{ mt: 2, color: '#1A2A44', fontWeight: 'bold' }}>
+            No Milk Entries Found
+          </Typography>
+          <Typography sx={{ mt: 1, color: '#666', mb: 4 }}>
+            It looks like there are no milk entries for this record yet. Let's add the first entry to track your milk consumption.
+          </Typography>
+          <Box
+            component="img"
+            src={emptyStateImage}
+            alt="No records illustration"
+            sx={{ width: 400, height: 'auto', mb: 4, borderRadius: '8px' }}
+          />
+     <Typography variant="body1" sx={{ color: '#888', mb: 2 }}>
+            What would you like to do next?
+          </Typography>
+
+         <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+             className="create-record-button"
+              variant="contained"
+              onClick={handleOpenDialog}
+               startIcon={<EditDocument />}
+            >
+              Create New Milk Entry
+            </Button>
+            <Button
+              className="view-demo-button"
+              variant="outlined"
+              onClick={handleViewDemoData}
+              startIcon={<Visibility />}
+            >
+              View Demo Data
             </Button>
           </Box>
-        ) : (
-          <Box className="table-container logs-table-container">
-            <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
-              Current Month Records
-            </Typography>
-            <Table sx={{ border: '1px solid #1a2a44' }}>
-              <TableHead>
-                <TableRow sx={{ bgcolor: '#1a2a44' }}>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Date</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Day Name</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Quantity (Liters)</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Cost</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Status</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Actions</TableCell>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            p: 4,
+            borderRadius: '16px',
+            boxShadow: 'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px',
+            bgcolor: '#FFFFFF',
+             width: '1170px',
+             m: "auto",
+             mt: 2,
+          }}
+        >
+           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
+          Milk Entries for {recordName}
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={handleOpenDialog}
+          sx={{
+            bgcolor: '#1A2A44',
+            letterSpacing:"2px",
+            color: '#fff',
+            fontWeight: 'bold',
+            borderRadius: '8px',
+            textTransform: 'uppercase',
+            px: 6,
+            py: 1.5,
+            '&:hover': { bgcolor: '#2E4057' }
+          }}
+          disabled={loading}
+        >
+          Create Milk
+        </Button>
+      </Box>
+
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#F8FAFC', '& > th': { fontWeight: 'bold', color: '#1A2A44', border: 'none' } }}>
+                <TableCell>Date</TableCell>
+                <TableCell>Quantity (Liters)</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {milkEntries.map((entry) => (
+                <TableRow key={entry.id} sx={{ '&:nth-of-type(odd)': { bgcolor: '#FFFFFF' }, '&:nth-of-type(even)': { bgcolor: '#F8FAFC' }, '& > td': { borderBottom: 'none' } }}>
+                  <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
+                  <TableCell sx={{ color: '#666' }}>{entry.quantityLiters}</TableCell>
+                  <TableCell>
+                    <Box
+                      component="span"
+                      sx={{
+                        color: entry.status === 'Active' ? '#10B981' : '#F59E0B',
+                        bgcolor: entry.status === 'Active' ? '#ECFDF5' : '#FEF3C7',
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: '16px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {entry.status}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton onClick={() => handleDelete(entry.id)} disabled={loading}>
+                      <Delete sx={{ color: '#EF4444' }} />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {milkEntries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{new Date(entry.date).toLocaleDateString()}</TableCell>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{getDayName(entry.date)}</TableCell>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.quantityLiters}</TableCell>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.totalCost.toFixed(2)}</TableCell>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>
-                      {entry.status === 'Active' ? 'Bought' : entry.status}
-                    </TableCell>
-                    <TableCell>
-                      {user.role === 'Admin' && (
-                        <IconButton onClick={() => handleDelete(entry.id)} disabled={loading}>
-                          <Delete sx={{ color: '#1a2a44' }} />
-                        </IconButton>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow>
-                  <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44', fontWeight: 'bold' }}>Total</TableCell>
-                  <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44', fontWeight: 'bold' }}>{days}</TableCell>
-                  <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44', fontWeight: 'bold' }}>{totalLiters.toFixed(2)}</TableCell>
-                  <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44', fontWeight: 'bold' }}>{totalCost.toFixed(2)}</TableCell>
-                  <TableCell colSpan={2} />
-                </TableRow>
-              </TableBody>
-            </Table>
-          </Box>
-        )}
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-          <DialogTitle sx={{ bgcolor: '#1a2a44', color: '#FFF' }}>Add Milk Log</DialogTitle>
-          <DialogContent>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      )}
+
+      <Dialog open={openDialog} onClose={handleCloseDialog} PaperProps={{ sx: { borderRadius: '16px', p: 2 } }}>
+        <DialogTitle sx={{ color: '#1A2A44', fontWeight: 'bold' }}>Add Milk Entry</DialogTitle>
+        <DialogContent>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               label="Date"
               value={milkForm.date}
               onChange={(date) => setMilkForm({ ...milkForm, date })}
-              minDate={new Date()}
-              renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }} />}
+              renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#666' }, '& .MuiInputBase-input': { color: '#1A2A44' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }} />}
             />
-            <TextField
-              label="Quantity (Liters)"
-              type="number"
-              fullWidth
-              margin="normal"
-              value={milkForm.quantityLiters}
-              onChange={(e) => setMilkForm({ ...milkForm, quantityLiters: e.target.value })}
-              required
-              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
-            />
-            <Select
-              label="Status"
-              fullWidth
-              value={milkForm.status}
-              onChange={(e) => setMilkForm({ ...milkForm, status: e.target.value })}
-              required
-              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiSelect-select': { color: '#1a2a44' }, mt: 2 }}
-            >
-              <MenuItem value="Active">Active</MenuItem>
-              <MenuItem value="Leave">Leave</MenuItem>
-            </Select>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenDialog(false)} sx={{ color: '#1a2a44' }}>Cancel</Button>
-            <Button onClick={handleMilkSubmit} variant="contained" sx={{ bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
-              Add
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    </LocalizationProvider>
+          </LocalizationProvider>
+          <TextField
+            label="Quantity (Liters)"
+            type="number"
+            fullWidth
+            margin="normal"
+            value={milkForm.quantityLiters}
+            onChange={(e) => setMilkForm({ ...milkForm, quantityLiters: e.target.value })}
+            required
+            sx={{ '& .MuiInputLabel-root': { color: '#666' }, '& .MuiInputBase-input': { color: '#1A2A44' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+          />
+          <Select
+            label="Status"
+            fullWidth
+            value={milkForm.status}
+            onChange={(e) => setMilkForm({ ...milkForm, status: e.target.value })}
+            required
+            sx={{ mt: 2, '& .MuiInputLabel-root': { color: '#666' }, '& .MuiSelect-select': { color: '#1A2A44' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+          >
+            <MenuItem value="Active">Active</MenuItem>
+            <MenuItem value="Leave">Leave</MenuItem>
+          </Select>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} sx={{ color: '#666', textTransform: 'none' }}>Cancel</Button>
+          <Button onClick={handleMilkSubmit} variant="contained"
+            sx={{
+              bgcolor: '#1A2A44',
+              color: '#FFD700',
+              textTransform: 'none',
+              borderRadius: '8px',
+              '&:hover': { bgcolor: '#2E4057' }
+            }}
+            disabled={loading}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Alert, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import { Delete, Visibility, EditDocument } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -62,8 +62,7 @@ function BillsPage({ user }) {
     }
   };
 
-  const handleBillSubmit = async (e) => {
-    e.preventDefault();
+  const handleBillSubmit = async () => {
     setLoading(true);
     try {
       const formData = new FormData();
@@ -73,11 +72,11 @@ function BillsPage({ user }) {
       formData.append('referenceNumber', billForm.referenceNumber);
       formData.append('adminId', user.id);
       if (billForm.file) formData.append('file', billForm.file);
-      const response = await createBill(formData);
+      await createBill(formData);
       setBillForm({ month: null, amount: '', referenceNumber: '', file: null });
-      setSuccess('Bill entry added');
-      fetchBillEntries();
+      setSuccess('Bill entry added successfully');
       setOpenDialog(false);
+      fetchBillEntries();
     } catch (err) {
       setError('Failed to add bill entry: ' + (err.response?.data || err.message));
     } finally {
@@ -85,11 +84,11 @@ function BillsPage({ user }) {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (entryId) => {
     setLoading(true);
     try {
-      await deleteBill(id);
-      setSuccess('Bill entry deleted');
+      await deleteBill(recordId, entryId);
+      setSuccess('Bill entry deleted successfully');
       fetchBillEntries();
     } catch (err) {
       setError('Failed to delete bill entry: ' + (err.response?.data || err.message));
@@ -98,134 +97,198 @@ function BillsPage({ user }) {
     }
   };
 
-  const getMonthName = (monthString) => {
-    const [year, month] = monthString.split('-');
-    return new Date(year, month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
   };
-
-  const handleImageClick = (filePath) => {
-    if (filePath) {
-      window.open(`${R2_BASE_URL}/${filePath}`, '_blank');
-    }
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setBillForm({ month: null, amount: '', referenceNumber: '', file: null });
   };
-
+  
+  const emptyStateImage = "https://img.freepik.com/premium-photo/spring-flowers-hands-beautiful-bouquet-female-hands_217529-507.jpg";
+  const handleViewDemoData = () => {
+      setSuccess('Simulating adding demo data...');
+      setTimeout(() => {
+          setSuccess('');
+          fetchRecords();
+      }, 2000);
+  };
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box className="bills-container">
-        <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
-          {recordName || 'Loading...'} Records
-        </Typography>
-        {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#1a2a44', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
-        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-          <Button variant="contained" sx={{ bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} onClick={() => setOpenDialog(true)}>
-            Create
-          </Button>
+    <Box sx={{ p: 3 }}>
+    
+
+      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FEE2E2', color: '#EF4444' }} onClose={() => setError('')}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#ECFDF5', color: '#10B981' }} onClose={() => setSuccess('')}>{success}</Alert>}
+      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1A2A44' }} />}
+
+      {billEntries.length === 0 ? (
+        <Box
+          className="empty-state" 
+        >
+          <Typography variant="h6" sx={{ mt: 2, color: '#1A2A44', fontWeight: 'bold' }}>
+            No Bills Found
+          </Typography>
+          <Typography sx={{ mt: 1, color: '#666', mb: 4 }}>
+            It looks like there are no bills for this record yet. Let's add the first bill to track your expenses.
+          </Typography>
+          <Box
+            component="img"
+            src={emptyStateImage}
+            alt="No records illustration"
+            sx={{ width: 400, height: 'auto', mb: 4, borderRadius: '8px' }}
+          />
+           <Typography variant="body1" sx={{ color: '#888', mb: 2 }}>
+                     What would you like to do next?
+                   </Typography>
+         
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                     <Button
+                      className="create-record-button"
+                       variant="contained"
+                       onClick={handleOpenDialog}
+                        startIcon={<EditDocument />}
+                     >
+                       Create New Bill Entry
+                     </Button>
+                     <Button
+                       className="view-demo-button"
+                       variant="outlined"
+                       onClick={handleViewDemoData}
+                       startIcon={<Visibility />}
+                     >
+                       View Demo Data
+                     </Button>
+                   </Box>
         </Box>
-        {billEntries.length === 0 ? (
-          <Box sx={{ border: '2px dotted #1a2a44', minHeight: '350px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-            <Box sx={{ textAlign: 'center', color: '#222222' }}>
-              <Typography>There is no data to show add some to show data</Typography>
-            </Box>
-            <Button variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} onClick={() => setOpenDialog(true)}>
-              Create
-            </Button>
-          </Box>
-        ) : (
-          <Box className="table-container logs-table-container">
-            <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222', fontWeight: 'bold', fontSize: '1.5rem', mb: 4 }}>
-              Bill Records
-            </Typography>
-            <Table sx={{ border: '1px solid #1a2a44' }}>
-              <TableHead>
-                <TableRow sx={{ bgcolor: '#1a2a44' }}>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Month</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Month Name</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Amount (Rs)</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Reference Number</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Image</TableCell>
-                  <TableCell sx={{ color: '#FFF', border: '1px solid #FFF3E0' }}>Actions</TableCell>
+      ) : (
+        <Box
+          sx={{
+         p: 4,
+            borderRadius: '16px',
+            boxShadow: 'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px',
+            bgcolor: '#FFFFFF',
+             width: '1170px',
+             m: "auto",
+             mt: 2,
+          }}
+        >
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
+          Bills for {recordName}
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={handleOpenDialog}
+           sx={{
+            bgcolor: '#1A2A44',
+            letterSpacing:"2px",
+            color: '#fff',
+            fontWeight: 'bold',
+            borderRadius: '8px',
+            textTransform: 'uppercase',
+            px: 6,
+            py: 1.5,
+            '&:hover': { bgcolor: '#2E4057' }
+          }}
+          disabled={loading}
+        >
+          Create Bill
+        </Button>
+      </Box>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#F8FAFC', '& > th': { fontWeight: 'bold', color: '#1A2A44', border: 'none' } }}>
+                <TableCell>Month</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Reference</TableCell>
+                <TableCell>Image</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {billEntries.map((entry) => (
+                <TableRow key={entry.id} sx={{ '&:nth-of-type(odd)': { bgcolor: '#FFFFFF' }, '&:nth-of-type(even)': { bgcolor: '#F8FAFC' }, '& > td': { borderBottom: 'none' } }}>
+                  <TableCell>{new Date(entry.month).toLocaleString('default', { month: 'long', year: 'numeric' })}</TableCell>
+                  <TableCell sx={{ color: '#666' }}>{entry.amount}</TableCell>
+                  <TableCell sx={{ color: '#666' }}>{entry.referenceNumber}</TableCell>
+                  <TableCell>
+                    {entry.fileUrl && (
+                      <a href={`${R2_BASE_URL}/${entry.fileUrl}`} target="_blank" rel="noopener noreferrer" style={{ color: '#1A2A44' }}>
+                        View Bill
+                      </a>
+                    )}
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton onClick={() => handleDelete(entry.id)} disabled={loading}>
+                      <Delete sx={{ color: '#EF4444' }} />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {billEntries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.month}</TableCell>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{getMonthName(entry.month)}</TableCell>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.amount}</TableCell>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>{entry.referenceNumber}</TableCell>
-                    <TableCell sx={{ color: '#1a2a44', border: '1px solid #1a2a44' }}>
-                      {entry.filePath && (
-                        <img
-                          src={`${R2_BASE_URL}/${entry.filePath}`}
-                          alt="Bill"
-                          style={{ width: '100px', height: 'auto', cursor: 'pointer' }}
-                          onClick={() => handleImageClick(entry.filePath)}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {user.role === 'Admin' && (
-                        <IconButton onClick={() => handleDelete(entry.id)} disabled={loading}>
-                          <Delete sx={{ color: '#1a2a44' }} />
-                        </IconButton>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Box>
-        )}
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-          <DialogTitle sx={{ bgcolor: '#1a2a44', color: '#FFF' }}>Add Electricity Bill</DialogTitle>
-          <DialogContent>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      )}
+
+      <Dialog open={openDialog} onClose={handleCloseDialog} PaperProps={{ sx: { borderRadius: '16px', p: 2 } }}>
+        <DialogTitle sx={{ color: '#1A2A44', fontWeight: 'bold' }}>Add Bill</DialogTitle>
+        <DialogContent>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               label="Month"
               views={['year', 'month']}
               value={billForm.month}
               onChange={(date) => setBillForm({ ...billForm, month: date })}
-              renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }} />}
+              renderInput={(params) => <TextField {...params} fullWidth margin="normal" required sx={{ '& .MuiInputLabel-root': { color: '#666' }, '& .MuiInputBase-input': { color: '#1A2A44' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }} />}
             />
-            <TextField
-              label="Amount (Rs)"
-              type="number"
-              fullWidth
-              margin="normal"
-              value={billForm.amount}
-              onChange={(e) => setBillForm({ ...billForm, amount: e.target.value })}
-              required
-              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
-            />
-            <TextField
-              label="Reference Number"
-              fullWidth
-              margin="normal"
-              value={billForm.referenceNumber}
-              onChange={(e) => setBillForm({ ...billForm, referenceNumber: e.target.value })}
-              required
-              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
-            />
-            <TextField
-              label="Upload Bill Image"
-              type="file"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              margin="normal"
-              onChange={(e) => setBillForm({ ...billForm, file: e.target.files[0] })}
-              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenDialog(false)} sx={{ color: '#1a2a44' }}>Cancel</Button>
-            <Button onClick={handleBillSubmit} variant="contained" sx={{ bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
-              Add
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    </LocalizationProvider>
+          </LocalizationProvider>
+          <TextField
+            label="Amount"
+            type="number"
+            fullWidth
+            margin="normal"
+            value={billForm.amount}
+            onChange={(e) => setBillForm({ ...billForm, amount: e.target.value })}
+            required
+            sx={{ '& .MuiInputLabel-root': { color: '#666' }, '& .MuiInputBase-input': { color: '#1A2A44' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+          />
+          <TextField
+            label="Reference Number"
+            fullWidth
+            margin="normal"
+            value={billForm.referenceNumber}
+            onChange={(e) => setBillForm({ ...billForm, referenceNumber: e.target.value })}
+            required
+            sx={{ '& .MuiInputLabel-root': { color: '#666' }, '& .MuiInputBase-input': { color: '#1A2A44' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+          />
+          <TextField
+            label="Upload Bill Image"
+            type="file"
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            margin="normal"
+            onChange={(e) => setBillForm({ ...billForm, file: e.target.files[0] })}
+            sx={{ '& .MuiInputLabel-root': { color: '#666' }, '& .MuiInputBase-input': { color: '#1A2A44' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} sx={{ color: '#666', textTransform: 'none' }}>Cancel</Button>
+          <Button onClick={handleBillSubmit} variant="contained"
+            sx={{
+              bgcolor: '#1A2A44',
+              color: '#FFD700',
+              textTransform: 'none',
+              borderRadius: '8px',
+              '&:hover': { bgcolor: '#2E4057' }
+            }}
+            disabled={loading}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
 

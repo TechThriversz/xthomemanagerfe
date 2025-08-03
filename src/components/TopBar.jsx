@@ -1,7 +1,8 @@
-import {Box,  AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
+import { Box, AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
 import { Settings, AccountCircle, Logout } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { NotificationsNoneOutlined, EmailOutlined } from '@mui/icons-material';
 import { CONFIG } from '../../config';
 
 function TopBar({ user, onLogout }) {
@@ -30,45 +31,48 @@ function TopBar({ user, onLogout }) {
   const imageUrl = user?.imagePath ? `${R2_BASE_URL}/${user.imagePath.replace(/\\/g, '/')}` : DUMMY_IMAGE_URL;
 
   return (
-  <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: '#1A2A44', color: '#FFF' }}>
-  <Toolbar sx={{ justifyContent: 'flex-start' }}>
-    <Typography variant="h6" component="div" sx={{ color: '#FFD700' }}>
-      XTHomeManager
-    </Typography>
+    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: '#FFFFFF', color: '#1A2A44', boxShadow: 'none', borderBottom: '1px solid #E0E0E0' }}>
+      <Toolbar sx={{ justifyContent: 'space-between', px: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography variant="h6" component="div" sx={{ color: '#1A2A44', fontWeight: 'bold' }}>
+            <span style={{ color: '#FFD700' }}>X</span>THomeManager
+          </Typography>
+        </Box>
 
-    {user && (
-      <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
-        <img
-          src={imageUrl}
-          alt="User Profile"
-          style={{ width: 40, height: 40, borderRadius: '50%', marginRight: 10 }}
-          onError={(e) => { console.error(`Image load failed for URL: ${imageUrl}`); e.target.src = DUMMY_IMAGE_URL; }}
-        />
-        <Typography variant="body1" sx={{ color: '#FFF', mr: 2 }}>
-          {user.fullName}
-        </Typography>
-        <IconButton color="inherit" onClick={handleMenuOpen} sx={{ color: '#FFD700' }}>
-          <Settings />
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          PaperProps={{ sx: { bgcolor: '#2E4057' } }}
-        >
-          <MenuItem onClick={handleProfileClick} sx={{ color: '#FFF' }}>
-            <AccountCircle sx={{ mr: 1, color: '#FFD700' }} /> Profile
-          </MenuItem>
-          <MenuItem onClick={handleLogoutClick} sx={{ color: '#FFF' }}>
-            <Logout sx={{ mr: 1, color: '#FFD700' }} /> Logout
-          </MenuItem>
-        </Menu>
-      </div>
-    )}
-  </Toolbar>
-</AppBar>
+        {user && (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton color="inherit" sx={{ color: '#888' }}><NotificationsNoneOutlined /></IconButton>
+            <IconButton color="inherit" sx={{ color: '#888', mr: 2 }}><EmailOutlined /></IconButton>
+            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={handleMenuOpen}>
+              <img
+                src={imageUrl}
+                alt="User Profile"
+                style={{ width: 36, height: 36, borderRadius: '50%', marginRight: 10, border: '2px solid #FFD700' }}
+                onError={(e) => { console.error(`Image load failed for URL: ${imageUrl}`); e.target.src = DUMMY_IMAGE_URL; }}
+              />
+              <Typography variant="body1" sx={{ color: '#1A2A44', fontWeight: 'medium' }}>
+                {user.fullName}
+              </Typography>
+            </div>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              PaperProps={{ sx: { bgcolor: '#F5F5F5', borderRadius: '8px' } }}
+            >
+              <MenuItem onClick={handleProfileClick} sx={{ color: '#333' }}>
+                <AccountCircle sx={{ mr: 1, color: '#666' }} /> Profile
+              </MenuItem>
+              <MenuItem onClick={handleLogoutClick} sx={{ color: '#333' }}>
+                <Logout sx={{ mr: 1, color: '#666' }} /> Logout
+              </MenuItem>
+            </Menu>
+          </Box>
+        )}
+      </Toolbar>
+    </AppBar>
   );
 }
 
