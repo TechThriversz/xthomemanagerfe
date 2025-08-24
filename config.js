@@ -1,4 +1,12 @@
-const BASE_API_URL = process.env.VITE_API_BASE_URL || 'http://localhost:7266';
+// src/config.js
+
+let BASE_API_URL;
+try {
+    BASE_API_URL = process.env.VITE_API_BASE_URL;
+} catch (e) {
+    // Fallback for local environments where process.env is not defined
+    BASE_API_URL = 'http://localhost:7266';
+}
 
 export const CONFIG = {
     BASE_API_URL: BASE_API_URL,
