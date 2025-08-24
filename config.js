@@ -1,6 +1,4 @@
-// src/config.js
-
-const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:7266';
+const BASE_API_URL = process.env.VITE_API_BASE_URL || 'http://localhost:7266';
 
 export const CONFIG = {
     BASE_API_URL: BASE_API_URL,
