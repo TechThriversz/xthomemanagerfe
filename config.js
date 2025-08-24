@@ -1,6 +1,9 @@
 // src/config.js
+
+const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:7266';
+
 export const CONFIG = {
-  BASE_API_URL: process.env.NODE_ENV === 'development' ? 'http://localhost:7266' : 'https://hmapi.somee.com', // Update for production
-  R2_BASE_URL: 'https://pub-867806bcf0914258bb29ce36f455004f.r2.dev', // Your R2 bucket URL
-  DUMMY_IMAGE_URL: 'https://themindfulaimanifesto.org/wp-content/uploads/2020/09/male-placeholder-image.jpeg', // Fallback image
+    BASE_API_URL: BASE_API_URL,
+    R2_BASE_URL: 'https://pub-867806bcf0914258bb29ce36f455004f.r2.dev',
+    DUMMY_IMAGE_URL: 'https://themindfulaimanifesto.org/wp-content/uploads/2020/09/male-placeholder-image.jpeg',
 };
