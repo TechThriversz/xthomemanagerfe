@@ -83,7 +83,7 @@ function RentPage({ user }) {
   const handleDelete = async (entryId) => {
     setLoading(true);
     try {
-      await deleteRent(recordId, entryId);
+      await deleteRent(entryId);
       setSuccess('Rent entry deleted successfully');
       fetchRentEntries();
     } catch (err) {

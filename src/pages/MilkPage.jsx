@@ -84,7 +84,7 @@ function MilkPage({ user }) {
   const handleDelete = async (entryId) => {
     setLoading(true);
     try {
-      await deleteMilk(recordId, entryId);
+      await deleteMilk(entryId);
       setSuccess('Milk entry deleted successfully');
       fetchMilkEntries();
     } catch (err) {

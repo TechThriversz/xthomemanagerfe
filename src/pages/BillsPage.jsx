@@ -87,7 +87,7 @@ function BillsPage({ user }) {
   const handleDelete = async (entryId) => {
     setLoading(true);
     try {
-      await deleteBill(recordId, entryId);
+      await deleteBill(entryId);
       setSuccess('Bill entry deleted successfully');
       fetchBillEntries();
     } catch (err) {
@@ -213,8 +213,8 @@ function BillsPage({ user }) {
                   <TableCell sx={{ color: '#666' }}>{entry.amount}</TableCell>
                   <TableCell sx={{ color: '#666' }}>{entry.referenceNumber}</TableCell>
                   <TableCell>
-                    {entry.fileUrl && (
-                      <a href={`${R2_BASE_URL}/${entry.fileUrl}`} target="_blank" rel="noopener noreferrer" style={{ color: '#1A2A44' }}>
+                    {entry.filePath && (
+                      <a href={`${R2_BASE_URL}/${entry.filePath}`} target="_blank" rel="noopener noreferrer" style={{ color: '#1A2A44' }}>
                         View Bill
                       </a>
                     )}
