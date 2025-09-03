@@ -6,6 +6,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { getRent, createRent, deleteRent, getRecords } from '../services/api';
+import { CONFIG } from '../../config'; // Import config
 import '../App.css';
 
 function RentPage({ user }) {
@@ -106,25 +107,25 @@ function RentPage({ user }) {
       setSuccess('Simulating adding demo data...');
       setTimeout(() => {
           setSuccess('');
-          fetchRecords();
+          fetchRentEntries(); // Fixed to fetchRentEntries instead of fetchRecords
       }, 2000);
   };
+
+  // Calculate statistics on the frontend
+  const totalAmount = rentEntries.length > 0 ? rentEntries.reduce((sum, entry) => sum + (entry.amount || 0), 0).toFixed(2) : 0;
+  const totalMonths = rentEntries.length > 0 ? new Set(rentEntries.map(entry => entry.month)).size : 0;
+
   return (
     <Box sx={{ p: 3 }}>
-   
-
       {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FEE2E2', color: '#EF4444' }} onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#ECFDF5', color: '#10B981' }} onClose={() => setSuccess('')}>{success}</Alert>}
       {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1A2A44' }} />}
 
       {rentEntries.length === 0 ? (
-        <Box
-        className="empty-state" 
-        >
-
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
-                          Rent Entries for {recordName}
-                      </Typography>
+        <Box className="empty-state">
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
+            Rent Entries for {recordName}
+          </Typography>
           <Typography variant="h6" sx={{ mt: 2, color: '#1A2A44', fontWeight: 'bold' }}>
             No Rent Entries Found
           </Typography>
@@ -140,13 +141,12 @@ function RentPage({ user }) {
           <Typography variant="body1" sx={{ color: '#888', mb: 2 }}>
             What would you like to do next?
           </Typography>
-
-         <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2 }}>
             <Button
-             className="create-record-button"
+              className="create-record-button"
               variant="contained"
               onClick={handleOpenDialog}
-               startIcon={<EditDocument />}
+              startIcon={<EditDocument />}
             >
               Create New Rent Entry
             </Button>
@@ -161,63 +161,110 @@ function RentPage({ user }) {
           </Box>
         </Box>
       ) : (
-        <Box
-          sx={{
-       p: 4,
-            borderRadius: '16px',
-            boxShadow: 'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px',
-            bgcolor: '#FFFFFF',
-             width: '1170px',
-             m: "auto",
-             mt: 2,
-          }}
-        >
+        <Box>
+          {/* Summary Boxes */}
+          <Box className="inner-boxes" sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 2, mb: 4 }}>
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: 'rgba(26, 42, 68, 0.9)', // Glassmorphism base color
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
+                  bgcolor: 'rgba(26, 42, 68, 0.95)',
+                },
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#FFD700' }}>Total Amount</Typography>
+              <Typography variant="h4" sx={{ color: '#FFD700' }}>{CONFIG.currencySymbol}{totalAmount}</Typography>
+            </Box>
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: 'rgba(245, 158, 11, 0.9)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
+                  bgcolor: 'rgba(245, 158, 11, 0.95)',
+                },
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#FFFFFF' }}>Total Months</Typography>
+              <Typography variant="h4" sx={{ color: '#FFFFFF' }}>{totalMonths}</Typography>
+            </Box>
+          </Box>
 
-             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
-          Rent Entries for {recordName}
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={handleOpenDialog}
-          sx={{
-            bgcolor: '#1A2A44',
-            letterSpacing:"2px",
-            color: '#fff',
-            fontWeight: 'bold',
-            borderRadius: '8px',
-            textTransform: 'uppercase',
-            px: 6,
-            py: 1.5,
-            '&:hover': { bgcolor: '#2E4057' }
-          }}
-          disabled={loading}
-        >
-          Create Rent
-        </Button>
-      </Box>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: '#F8FAFC', '& > th': { fontWeight: 'bold', color: '#1A2A44', border: 'none' } }}>
-                <TableCell>Month</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rentEntries.map((entry) => (
-                <TableRow key={entry.id} sx={{ '&:nth-of-type(odd)': { bgcolor: '#FFFFFF' }, '&:nth-of-type(even)': { bgcolor: '#F8FAFC' }, '& > td': { borderBottom: 'none' } }}>
-                  <TableCell>{new Date(entry.month).toLocaleString('default', { month: 'long', year: 'numeric' })}</TableCell>
-                  <TableCell sx={{ color: '#666' }}>{entry.amount}</TableCell>
-                  <TableCell align="right">
-                    <IconButton onClick={() => handleDelete(entry.id)} disabled={loading}>
-                      <Delete sx={{ color: '#EF4444' }} />
-                    </IconButton>
-                  </TableCell>
+          {/* Table Section */}
+          <Box
+            sx={{
+              p: 4,
+              borderRadius: '16px',
+              boxShadow: 'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px',
+              bgcolor: '#FFFFFF',
+              width: '1170px',
+              m: 'auto',
+              mt: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
+                Rent Entries for {recordName}
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={handleOpenDialog}
+                sx={{
+                  bgcolor: '#1A2A44',
+                  letterSpacing: '2px',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  textTransform: 'uppercase',
+                  px: 6,
+                  py: 1.5,
+                  '&:hover': { bgcolor: '#2E4057' }
+                }}
+                disabled={loading}
+              >
+                Create Rent
+              </Button>
+            </Box>
+
+            <Table>
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#F8FAFC', '& > th': { fontWeight: 'bold', color: '#1A2A44', border: 'none' } }}>
+                  <TableCell>Month</TableCell>
+                  <TableCell>Amount ({CONFIG.currencySymbol})</TableCell>
+                  <TableCell align="right">Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {rentEntries.map((entry) => (
+                  <TableRow key={entry.id} sx={{ '&:nth-of-type(odd)': { bgcolor: '#FFFFFF' }, '&:nth-of-type(even)': { bgcolor: '#F8FAFC' }, '& > td': { borderBottom: 'none' } }}>
+                    <TableCell>{new Date(entry.month).toLocaleString('default', { month: 'long', year: 'numeric' })}</TableCell>
+                    <TableCell sx={{ color: '#666' }}>{CONFIG.currencySymbol}{entry.amount}</TableCell>
+                    <TableCell align="right">
+                      <IconButton onClick={() => handleDelete(entry.id)} disabled={loading}>
+                        <Delete sx={{ color: '#EF4444' }} />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
         </Box>
       )}
 

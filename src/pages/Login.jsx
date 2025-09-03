@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import { Box, TextField, Button, Typography, Alert, CircularProgress } from '@mui/material';
 import { login } from '../services/api';
 import '../App.css';
@@ -14,20 +14,15 @@ function Login({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     try {
       const res = await login({ email, password });
-      console.log('Login Response:', res.data);
       const { user, token } = res.data;
       if (!user?.id) {
-        console.error('Login: No user.id in response', user);
-        setError('Login failed: User ID missing');
-        setLoading(false);
-        return;
+        throw new Error('Login failed: User data missing');
       }
-      onLogin(user);
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      navigate('/dashboard');
+      // The onLogin function will handle storing data and navigating
+      onLogin(user, token);
     } catch (err) {
       console.error('Login error:', err.response?.data || err.message);
       setError('Invalid email or password');
@@ -47,7 +42,6 @@ function Login({ onLogin }) {
             {error}
           </Alert>
         )}
-        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             label="Email"
@@ -69,14 +63,20 @@ function Login({ onLogin }) {
             required
             sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
+          {/* NEW: Forgot Password Link */}
+          <Box sx={{ textAlign: 'right', my: 1 }}>
+              <Link to="/forgot-password" style={{ color: '#1a2a44', textDecoration: 'none', fontWeight: 'bold' }}>
+                  Forgot Password?
+              </Link>
+          </Box>
           <Button
             type="submit"
             variant="contained"
             fullWidth
-            sx={{ mt: 2, py: 1.5, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }}
+            sx={{ mt: 1, py: 1.5, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }}
             disabled={loading}
           >
-            Login
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
           </Button>
           <Button
             variant="text"
@@ -84,7 +84,7 @@ function Login({ onLogin }) {
             sx={{ mt: 1, color: '#1a2a44' }}
             onClick={() => navigate('/register')}
           >
-            Register
+            Don't have an account? Register
           </Button>
         </Box>
       </Box>

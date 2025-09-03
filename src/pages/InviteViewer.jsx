@@ -1,5 +1,6 @@
+// InviteViewer.jsx
 import { useState, useEffect } from 'react';
-import { Typography, TextField, Button, Select, MenuItem, Alert, Box } from '@mui/material'; // Added Box import
+import { Typography, TextField, Button, Select, MenuItem, Alert, Box } from '@mui/material';
 import { inviteViewer, getRecords } from '../services/api';
 import '../App.css';
 
@@ -26,7 +27,7 @@ function InviteViewer({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await inviteViewer(email, email.split('@')[0], user.id, recordName);
+      await inviteViewer(email, user.id, recordName);
       setSuccess('Viewer invited successfully');
       setEmail('');
       setRecordName('');

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, TextField, Button, Typography, Paper, Alert } from '@mui/material';
+import { Box, TextField, Button, Typography, Alert, CircularProgress } from '@mui/material';
 import { register } from '../services/api';
 import '../App.css';
 
@@ -15,23 +15,19 @@ function Register({ onRegister }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     try {
-      const res = await register({ email, password, fullName, role: 'Admin' });
-      console.log('Register: Response:', res.data);
+      const res = await register({ email, password, fullName });
       const { user, token } = res.data;
       if (!user.id) {
-        console.error('Register: No user.id in response');
-        setError('Registration failed: User ID missing');
-        setLoading(false);
-        return;
+        throw new Error('Registration failed: User data missing');
       }
-      onRegister(user);
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      navigate('/dashboard');
+      // CRITICAL FIX: This calls the function in App.jsx which now handles all state and navigation.
+      onRegister(user, token);
+
     } catch (err) {
       console.error('Register error:', err.response?.data || err.message);
-      setError('Registration failed: ' + (err.response?.data || err.message));
+      setError('Registration failed: ' + (err.response?.data?.message || err.response?.data || err.message));
     } finally {
       setLoading(false);
     }
@@ -41,14 +37,13 @@ function Register({ onRegister }) {
     <Box className="login-container">
       <Box className="form-container">
         <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222' }}>
-          Register to XTHomeManager
+          Register for XTHomeManager
         </Typography>
         {error && (
           <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>
             {error}
           </Alert>
         )}
-        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             label="Full Name"
@@ -86,7 +81,7 @@ function Register({ onRegister }) {
             sx={{ mt: 2, py: 1.5, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }}
             disabled={loading}
           >
-            Register
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Register'}
           </Button>
           <Button
             variant="text"
@@ -103,3 +98,4 @@ function Register({ onRegister }) {
 }
 
 export default Register;
+

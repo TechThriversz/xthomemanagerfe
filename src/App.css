@@ -183,7 +183,10 @@ body {
     background-color: #F0F2F5 !important; /* Lighter hover effect */
      transform: translateY(-2px); /* Subtle lift effect */
 }
-
+.inner-boxes {
+    max-width: 1170px;
+    margin: auto;
+}
 @media (min-width: 769px) {
     /* Adjust for sidebar if present */
     .with-sidebar.content-container {
