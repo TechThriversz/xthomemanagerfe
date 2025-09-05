@@ -3,6 +3,7 @@ import { Box, Typography, Grid, Card, CardContent, CircularProgress } from '@mui
 import { AttachMoney, People, Lock, Healing } from '@mui/icons-material';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../App.css';
+import { CONFIG } from '../../config'; // Import config
 
 // Separate TimeDisplay component to isolate time updates
 const TimeDisplay = () => {
@@ -150,7 +151,7 @@ function DashboardPage({ user }) {
           {/* KPI Cards */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {[
-              { icon: <AttachMoney sx={{ fontSize: 40, color: '#BFDBFE' }} />, label: 'Total Monthly Expense', value: `Rs ${totalExpense.toLocaleString()}` },
+              { icon: <AttachMoney sx={{ fontSize: 40, color: '#BFDBFE' }} />, label: 'Total Monthly Expense', value: ` ${CONFIG.currencySymbol} ${totalExpense.toLocaleString()}` },
               { icon: <People sx={{ fontSize: 40, color: '#A7F3D0' }} />, label: 'Active Family Members', value: `${dashboardSummary.activeFamilyMembers || 6} Members` },
               { icon: <Lock sx={{ fontSize: 40, color: '#DDD6FE' }} />, label: 'Total Stored Passwords', value: dashboardSummary.totalPasswords || 47 },
               { icon: <Healing sx={{ fontSize: 40, color: '#FDE68A' }} />, label: 'Medical Records Count', value: dashboardSummary.medicalRecords || 12 }
