@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, CircularProgress } from '@mui/material';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/Layout';
 import DashboardPage from './pages/DashboardPage';
 import RecordsPage from './pages/RecordsPage';
@@ -83,7 +85,9 @@ function App() {
   }
 
   return (
+    
     <Box sx={{ bgcolor: '#f2f2f2', minHeight: '100vh', display: 'flex', width: '100%' }} className="app-layout">
+     <ToastContainer position="top-right" autoClose={3000} />
       <CssBaseline />
       <Routes>
         {/* Public Routes */}

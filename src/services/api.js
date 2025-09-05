@@ -15,7 +15,6 @@ api.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     } else {
-        // Use console.debug for less critical logs
         console.debug('API: No token found in localStorage');
     }
     return config;
@@ -30,18 +29,19 @@ export const login = (data) => {
     return api.post('/auth/login', data);
 };
 export const register = (data) => api.post('/auth/register', data);
-export const forgotPassword = (data) => api.post('/auth/forgot-password', data); // Added
-export const resetPassword = (data) => api.post('/auth/reset-password', data); // Added
-export const inviteViewer = (email, fullName, adminId, recordName) =>
-    api.post('/auth/invite', { email, fullName, adminId, recordName });
+export const forgotPassword = (data) => api.post('/auth/forgot-password', data);
+export const resetPassword = (data) => api.post('/auth/reset-password', data);
+export const inviteViewer = (email, recordName) =>
+    api.post('/auth/invite', { email, recordName });
 export const revokeViewer = (viewerId, recordName) =>
     api.post('/auth/revoke', { viewerId, recordName });
+export const getInvitedViewers = (adminId) => api.get(`/auth/invited-viewers/${adminId}`);
 
 // Record API endpoints
 export const getRecords = () => api.get('/record');
 export const createRecord = (record) => {
-    console.log('API createRecord payload:', record);
-    return api.post('/record', record);
+  console.log('API createRecord payload:', record);
+  return api.post('/record', { name: record.name, type: record.type }); // Only send name and type
 };
 export const deleteRecord = (id) => api.delete(`/record/${id}`);
 

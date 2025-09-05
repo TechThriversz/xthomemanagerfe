@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsNoneOutlined, EmailOutlined } from '@mui/icons-material';
 import { CONFIG } from '../../config';
+import assets from '../asset';
 
 function TopBar({ user, onLogout }) {
   const navigate = useNavigate();
@@ -34,9 +35,11 @@ function TopBar({ user, onLogout }) {
     <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: '#FFFFFF', color: '#1A2A44', boxShadow: 'none', borderBottom: '1px solid #E0E0E0' }}>
       <Toolbar sx={{ justifyContent: 'space-between', px: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant="h6" component="div" sx={{ color: '#1A2A44', fontWeight: 'bold' }}>
-            <span style={{ color: '#FFD700' }}>X</span>THomeManager
-          </Typography>
+           <img
+                src={assets.logo}
+                alt="Main Logo"
+                style={{ width: 'auto', height: '50px',  }}
+              />
         </Box>
 
         {user && (

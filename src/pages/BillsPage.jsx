@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, Alert, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
 import { Delete, Visibility, EditDocument } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -8,6 +8,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { getBills, createBill, deleteBill, getRecords } from '../services/api';
 import { CONFIG } from '../../config';
 import '../App.css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function BillsPage({ user }) {
   const { recordId } = useParams();
@@ -15,8 +17,6 @@ function BillsPage({ user }) {
   const [billEntries, setBillEntries] = useState([]);
   const [billForm, setBillForm] = useState({ month: null, amount: '', referenceNumber: '', file: null });
   const [recordName, setRecordName] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -24,7 +24,7 @@ function BillsPage({ user }) {
 
   useEffect(() => {
     if (!user?.id) {
-      setError('Please log in to view this page');
+      toast.error('Please log in to view this page', { position: 'top-right', autoClose: 3000 });
       navigate('/login');
       return;
     }
@@ -37,9 +37,8 @@ function BillsPage({ user }) {
     try {
       const response = await getBills(recordId);
       setBillEntries(response.data || []);
-      setError('');
     } catch (err) {
-      setError('Failed to fetch bill entries: ' + (err.response?.data || err.message));
+      toast.error('Failed to fetch bill entries: ' + (err.response?.data || err.message), { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -53,10 +52,10 @@ function BillsPage({ user }) {
       if (record) {
         setRecordName(record.name);
       } else {
-        setError('Record not found');
+        toast.error('Record not found', { position: 'top-right', autoClose: 3000 });
       }
     } catch (err) {
-      setError('Failed to fetch record name: ' + (err.response?.data || err.message));
+      toast.error('Failed to fetch record name: ' + (err.response?.data || err.message), { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -74,11 +73,11 @@ function BillsPage({ user }) {
       if (billForm.file) formData.append('file', billForm.file);
       await createBill(formData);
       setBillForm({ month: null, amount: '', referenceNumber: '', file: null });
-      setSuccess('Bill entry added successfully');
+      toast.success('Bill entry added successfully', { position: 'top-right', autoClose: 3000 });
       setOpenDialog(false);
       fetchBillEntries();
     } catch (err) {
-      setError('Failed to add bill entry: ' + (err.response?.data || err.message));
+      toast.error('Failed to add bill entry: ' + (err.response?.data || err.message), { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -88,10 +87,10 @@ function BillsPage({ user }) {
     setLoading(true);
     try {
       await deleteBill(entryId);
-      setSuccess('Bill entry deleted successfully');
+      toast.success('Bill entry deleted successfully', { position: 'top-right', autoClose: 3000 });
       fetchBillEntries();
     } catch (err) {
-      setError('Failed to delete bill entry: ' + (err.response?.data || err.message));
+      toast.error('Failed to delete bill entry: ' + (err.response?.data || err.message), { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -120,8 +119,6 @@ function BillsPage({ user }) {
 
   return (
     <Box sx={{ p: 3 }}>
-      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FEE2E2', color: '#EF4444' }} onClose={() => setError('')}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#ECFDF5', color: '#10B981' }} onClose={() => setSuccess('')}>{success}</Alert>}
       {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1A2A44' }} />}
 
       {billEntries.length === 0 ? (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, Alert, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Select, MenuItem } from '@mui/material';
+import { Box, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Select, MenuItem } from '@mui/material';
 import { Delete, Add, Visibility, EditDocument } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -8,6 +8,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { getMilk, createMilk, deleteMilk, getRecords } from '../services/api';
 import { CONFIG } from '../../config'; // Import config
 import '../App.css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function MilkPage({ user }) {
   const { recordId } = useParams();
@@ -15,14 +17,12 @@ function MilkPage({ user }) {
   const [milkEntries, setMilkEntries] = useState([]);
   const [milkForm, setMilkForm] = useState({ date: new Date(), quantityLiters: '', status: 'Active' });
   const [recordName, setRecordName] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     if (!user?.id) {
-      setError('Please log in to view this page');
+      toast.error('Please log in to view this page', { position: 'top-right', autoClose: 3000 });
       navigate('/login');
       return;
     }
@@ -35,9 +35,8 @@ function MilkPage({ user }) {
     try {
       const response = await getMilk(recordId);
       setMilkEntries(response.data || []);
-      setError('');
     } catch (err) {
-      setError('Failed to fetch milk entries: ' + (err.response?.data || err.message));
+      toast.error('Failed to fetch milk entries: ' + (err.response?.data || err.message), { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -51,10 +50,10 @@ function MilkPage({ user }) {
       if (record) {
         setRecordName(record.name);
       } else {
-        setError('Record not found');
+        toast.error('Record not found', { position: 'top-right', autoClose: 3000 });
       }
     } catch (err) {
-      setError('Failed to fetch record name: ' + (err.response?.data || err.message));
+      toast.error('Failed to fetch record name: ' + (err.response?.data || err.message), { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -72,11 +71,11 @@ function MilkPage({ user }) {
       };
       await createMilk(payload);
       setMilkForm({ ...milkForm, quantityLiters: '', date: new Date() });
-      setSuccess('Milk entry added successfully');
+      toast.success('Milk entry added successfully', { position: 'top-right', autoClose: 3000 });
       setOpenDialog(false);
       fetchMilkEntries();
     } catch (err) {
-      setError('Failed to add milk entry: ' + (err.response?.data || err.message));
+      toast.error('Failed to add milk entry: ' + (err.response?.data || err.message), { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -86,10 +85,10 @@ function MilkPage({ user }) {
     setLoading(true);
     try {
       await deleteMilk(entryId);
-      setSuccess('Milk entry deleted successfully');
+      toast.success('Milk entry deleted successfully', { position: 'top-right', autoClose: 3000 });
       fetchMilkEntries();
     } catch (err) {
-      setError('Failed to delete milk entry: ' + (err.response?.data || err.message));
+      toast.error('Failed to delete milk entry: ' + (err.response?.data || err.message), { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -120,8 +119,6 @@ function MilkPage({ user }) {
 
   return (
     <Box sx={{ p: 3 }}>
-      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FEE2E2', color: '#EF4444' }} onClose={() => setError('')}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#ECFDF5', color: '#10B981' }} onClose={() => setSuccess('')}>{success}</Alert>}
       {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1A2A44' }} />}
 
       {milkEntries.length === 0 ? (

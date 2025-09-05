@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Typography, TextField, Button, Alert, Box, CircularProgress } from '@mui/material';
 import { getSettings, updateSettings, updateUser } from '../services/api';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../App.css';
 import { CONFIG } from '../../config'; // Adjust path based on your project structure
 
@@ -26,7 +28,7 @@ function SettingsPage({ user, setUser }) {
       setSettings(res.data || { milkRatePerLiter: 0 });
       setError('');
     } catch (err) {
-      setError('Failed to fetch settings: ' + (err.response?.data?.title || err.message));
+      toast.error(err.response?.data?.title || 'Failed to fetch settings.', { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -37,10 +39,10 @@ function SettingsPage({ user, setUser }) {
     setLoading(true);
     try {
       await updateSettings({ milkRatePerLiter: parseFloat(settings.milkRatePerLiter) });
-      setSuccess('Settings updated successfully');
+     toast.success(response.message || 'Settings updated successfully', { position: 'top-right', autoClose: 3000 });
       setError('');
     } catch (err) {
-      setError('Failed to update settings: ' + (err.response?.data?.title || err.message));
+      toast.error(err.message || 'Failed to update settings.', { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -60,12 +62,12 @@ function SettingsPage({ user, setUser }) {
       if (userForm.password) formData.append('password', userForm.password);
       if (userForm.image) formData.append('image', userForm.image);
       const response = await updateUser(user.id, formData);
-      setSuccess('User profile updated successfully');
+      toast.success(response.message || 'Your profile updated successfully', { position: 'top-right', autoClose: 3000 });
       setUserForm({ ...userForm, password: '', image: null });
       setUser(response.data); // Use the callback to update the global user state
       setError('');
     } catch (err) {
-      setError('Failed to update user profile: ' + (err.response?.data?.title || err.message));
+       toast.error(err.message || 'Failed to update your profile', { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }

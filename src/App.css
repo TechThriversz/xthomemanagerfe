@@ -83,7 +83,7 @@
 /* Dashboard */
 .dashboard-container,
 .record-container,
-.inivte-container,
+.invite-container,
 .settings-container,
 .milk-container,
 .rent-container,
@@ -115,7 +115,7 @@
 }
 
 /* Invite */
-.inivte-container,
+.invite-container,
 .settings-container {
     max-width: 600px; /* Adjusted for larger screens */
     width: 100%;

@@ -1,22 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Box, Typography, TextField, Button, Alert, Table, TableBody, TableCell, TableHead, TableRow, IconButton, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem } from '@mui/material';
-import { Delete, Add, Visibility, EditDocument } from '@mui/icons-material';
+import { Box, Typography, TextField, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem } from '@mui/material';
+import { Delete as DeleteIcon, Add as AddIcon, Visibility as VisibilityIcon, Edit as EditIcon } from '@mui/icons-material';
 import { getRecords, createRecord, deleteRecord } from '../services/api';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../App.css';
 
 function RecordsPage({ user }) {
   const navigate = useNavigate();
   const [records, setRecords] = useState([]);
   const [form, setForm] = useState({ name: '', type: '' });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     if (!user?.id) {
-      setError('Please log in to view this page');
+      toast.error('Please log in to view this page', { position: 'top-right', autoClose: 3000 });
       navigate('/login');
       return;
     }
@@ -27,11 +27,9 @@ function RecordsPage({ user }) {
     setLoading(true);
     try {
       const response = await getRecords();
-      console.log('Fetched records:', response.data);
       setRecords(response.data || []);
-      setError('');
     } catch (err) {
-      setError('Failed to fetch records: ' + (err.response?.data || err.message));
+      toast.error(err.response?.data?.Message || 'Failed to fetch records', { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -41,13 +39,13 @@ function RecordsPage({ user }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await createRecord({ ...form, userId: user.id });
+      const response = await createRecord({ name: form.name, type: form.type });
+      toast.success(response.message || 'Record has been created successfully!', { position: 'top-right', autoClose: 3000 });
       setForm({ name: '', type: '' });
-      setSuccess('Record created successfully');
       setOpenDialog(false);
       fetchRecords();
     } catch (err) {
-      setError('Failed to create record: ' + (err.response?.data || err.message));
+      toast.error(err.message || 'Failed to create record', { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -56,11 +54,11 @@ function RecordsPage({ user }) {
   const handleDelete = async (id) => {
     setLoading(true);
     try {
-      await deleteRecord(id);
-      setSuccess('Record deleted successfully');
+      const response = await deleteRecord(id);
+      toast.success(response.message || 'Record has been deleted successfully!', { position: 'top-right', autoClose: 3000 });
       fetchRecords();
     } catch (err) {
-      setError('Failed to delete record: ' + (err.response?.data || err.message));
+      toast.error(err.message || 'Failed to delete record', { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -74,101 +72,55 @@ function RecordsPage({ user }) {
     setOpenDialog(false);
     setForm({ name: '', type: '' });
   };
-  
-  // Placeholder image for the empty state.
+
   const emptyStateImage = "https://img.freepik.com/premium-photo/spring-flowers-hands-beautiful-bouquet-female-hands_217529-507.jpg";
-  const handleViewDemoData = () => {
-      // Logic for demo data button
-      setSuccess('Simulating adding demo data...');
-      setTimeout(() => {
-          setSuccess('');
-          fetchRecords();
-      }, 2000);
-  };
 
   return (
     <Box className="record-container" sx={{ p: 3 }}>
-   
-
-      {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FEE2E2', color: '#EF4444' }} onClose={() => setError('')}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#ECFDF5', color: '#10B981' }} onClose={() => setSuccess('')}>{success}</Alert>}
       {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1A2A44' }} />}
 
       {records.length === 0 ? (
-        <Box
-        className="empty-state" 
-        >
-           <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
-          Records
-        </Typography>
-          <Typography variant="h6" sx={{ mt: 2, color: '#1A2A44', fontWeight: 'bold' }}>
-            No Records Found
-          </Typography>
+        <Box className="empty-state" sx={{ textAlign: 'center', maxWidth: '600px', mx: 'auto', mt: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>Records</Typography>
+          <Typography variant="h6" sx={{ mt: 2, color: '#1A2A44', fontWeight: 'bold' }}>No Records Found</Typography>
           <Typography sx={{ mt: 1, color: '#666', mb: 4 }}>
             It looks like you haven't added any records yet. Let's get started by creating your first record to track your home expenses.
           </Typography>
-          <Box
-            component="img"
-            src={emptyStateImage}
-            alt="No records illustration"
-            sx={{ width: 400, height: 'auto', mb: 4, borderRadius: '8px' }}
-          />
-          <Typography variant="body1" sx={{ color: '#888', mb: 2 }}>
-            What would you like to do next?
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box component="img" src={emptyStateImage} alt="No records illustration" sx={{ width: 500, height: 'auto', mb: 4, borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+          <Typography variant="body1" sx={{ color: '#888', mb: 2 }}>What would you like to do next?</Typography>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
             <Button
-             className="create-record-button"
               variant="contained"
               onClick={handleOpenDialog}
-               startIcon={<EditDocument />}
+              startIcon={<EditIcon />}
+              sx={{ bgcolor: '#1A2A44', color: '#FFD700', borderRadius: '8px', px: 3, py: 1.5, '&:hover': { bgcolor: '#2E4057' } }}
             >
               Create New Record
             </Button>
             <Button
-              className="view-demo-button"
               variant="outlined"
-              onClick={handleViewDemoData}
-              startIcon={<Visibility />}
+              onClick={() => toast.info('View Demo Data feature coming soon!', { position: 'top-right', autoClose: 3000 })}
+              startIcon={<VisibilityIcon />}
+              sx={{ color: '#1A2A44', borderColor: '#1A2A44', borderRadius: '8px', px: 3, py: 1.5, '&:hover': { borderColor: '#2E4057', color: '#2E4057' } }}
             >
               View Demo Data
             </Button>
           </Box>
         </Box>
       ) : (
-        <Box
-          sx={{
-            p: 4,
-            borderRadius: '16px',
-            boxShadow: 'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px',
-            bgcolor: '#FFFFFF',
-             width: '1170px',
-             m: "auto",
-             mt: 2,
-          }}
-        >
-             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
-          Records
-        </Typography>
-        <Button variant="contained" onClick={handleOpenDialog}
-            sx={{
-            bgcolor: '#1A2A44',
-            letterSpacing:"2px",
-            color: '#fff',
-            fontWeight: 'bold',
-            borderRadius: '8px',
-            textTransform: 'uppercase',
-            px: 6,
-            py: 1.5,
-            '&:hover': { bgcolor: '#2E4057' }
-          }}
-          disabled={loading}
-        >
-          Create Record
-        </Button>
-      </Box>
-      {/* inner Buttons */}
+        <Box sx={{ p: 4, borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', bgcolor: '#FFFFFF', width: '1170px', m: 'auto', mt: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>Records</Typography>
+            <Button
+              variant="contained"
+              onClick={handleOpenDialog}
+              startIcon={<AddIcon />}
+              sx={{ bgcolor: '#1A2A44', color: '#FFD700', fontWeight: 'bold', borderRadius: '8px', px: 4, py: 1.5, '&:hover': { bgcolor: '#2E4057' } }}
+              disabled={loading}
+            >
+              Create Record
+            </Button>
+          </Box>
           <Table>
             <TableHead>
               <TableRow sx={{ bgcolor: '#F8FAFC', '& > th': { fontWeight: 'bold', color: '#1A2A44', border: 'none' } }}>
@@ -196,7 +148,7 @@ function RecordsPage({ user }) {
                   {user.role === 'Admin' && (
                     <TableCell align="right">
                       <IconButton onClick={() => handleDelete(record.id)} disabled={loading}>
-                        <Delete sx={{ color: '#EF4444' }} />
+                        <DeleteIcon sx={{ color: '#EF4444' }} />
                       </IconButton>
                     </TableCell>
                   )}
@@ -207,49 +159,61 @@ function RecordsPage({ user }) {
         </Box>
       )}
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} PaperProps={{ sx: { borderRadius: '16px', p: 2 } }}>
-        <DialogTitle sx={{ color: '#1A2A44', fontWeight: 'bold' }}>Create New Record</DialogTitle>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: '16px', p: 3, bgcolor: '#F9FAFB' } }}>
+        <DialogTitle sx={{ color: '#1A2A44', fontWeight: 'bold', fontSize: '1.5rem', textAlign: 'center', pb: 2 }}>
+          Create New Record
+        </DialogTitle>
         <DialogContent>
-          <form onSubmit={handleSubmit}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <TextField
               label="Record Name"
               fullWidth
-              margin="normal"
+              variant="outlined"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
-              sx={{ '& .MuiInputLabel-root': { color: '#666' }, '& .MuiInputBase-input': { color: '#1A2A44' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              InputProps={{ sx: { borderRadius: '12px', bgcolor: '#FFFFFF', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#D1D5DB' } } }}
+              InputLabelProps={{ sx: { color: '#666', '&.Mui-focused': { color: '#1A2A44' } } }}
             />
             <Select
               label="Type"
               fullWidth
+              variant="outlined"
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value })}
               required
-              sx={{ '& .MuiInputLabel-root': { color: '#666' }, '& .MuiSelect-select': { color: '#1A2A44' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              InputProps={{ sx: { borderRadius: '12px', bgcolor: '#FFFFFF', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#D1D5DB' } } }}
+              MenuProps={{ PaperProps: { sx: { borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' } } }}
             >
               <MenuItem value="">Select Type</MenuItem>
-              <MenuItem value="Milk">Milk</MenuItem>
-              <MenuItem value="Bill">Bill</MenuItem>
-              <MenuItem value="Rent">Rent</MenuItem>
+              <MenuItem value="Milk" sx={{ '&:hover': { bgcolor: '#F3F4F6' } }}>Milk</MenuItem>
+              <MenuItem value="Bill" sx={{ '&:hover': { bgcolor: '#F3F4F6' } }}>Bill</MenuItem>
+              <MenuItem value="Rent" sx={{ '&:hover': { bgcolor: '#F3F4F6' } }}>Rent</MenuItem>
             </Select>
-            <DialogActions>
-              <Button onClick={handleCloseDialog} sx={{ color: '#666', textTransform: 'none' }}>Cancel</Button>
-              <Button type="submit" variant="contained"
-                sx={{
-                  bgcolor: '#1A2A44',
-                  color: '#FFD700',
-                  textTransform: 'none',
-                  borderRadius: '8px',
-                  '&:hover': { bgcolor: '#2E4057' }
-                }}
-                disabled={loading}
-              >
-                Create
-              </Button>
-            </DialogActions>
-          </form>
+          </Box>
         </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button onClick={handleCloseDialog} sx={{ color: '#666', textTransform: 'none', px: 3, py: 1, borderRadius: '12px', '&:hover': { bgcolor: '#F3F4F6' } }}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            onClick={handleSubmit}
+            sx={{
+              bgcolor: '#1A2A44',
+              color: '#FFD700',
+              textTransform: 'none',
+              px: 4,
+              py: 1.5,
+              borderRadius: '12px',
+              '&:hover': { bgcolor: '#2E4057' }
+            }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} sx={{ color: '#FFD700' }} /> : 'Create'}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );
