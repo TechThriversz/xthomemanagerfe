@@ -66,6 +66,14 @@ function Sidebar({ user, currentRecordId }) {
                 </ListItemButton>
               </ListItem>
             )}
+            {user?.role === 'Viewer' && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/invited-records" sx={{ pl: 4, color: '#72737E', '&.active': { bgcolor: '#F0F2F5', color: '#1A2A44' } }}>
+                  <ListItemIcon><ListAlt sx={{ color: '#72737E' }} /></ListItemIcon>
+                  <ListItemText primary="Invited Records" />
+                </ListItemButton>
+              </ListItem>
+            )}
           </List>
         </Collapse>
         {user?.role === 'Admin' && (

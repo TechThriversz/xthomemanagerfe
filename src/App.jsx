@@ -18,6 +18,7 @@ import Register from './pages/Register';
 import InviteViewer from './pages/InviteViewer';
 import ForgotPassword from './pages/ForgotPassword'; // NEW
 import ResetPassword from './pages/ResetPassword';   // NEW
+import RecordsViewerPage from './pages/RecordsViewerPage';
 
 function App() {
   const navigate = useNavigate();
@@ -111,6 +112,7 @@ function App() {
                 <Route path="bills/:recordId/:name" element={<BillsPage user={user} />} />
                 <Route path="settings" element={<SettingsPage user={user} setUser={updateUser} />} />
                 <Route path="invite" element={<InviteViewer user={user} />} />
+                <Route path="invited-records" element={<RecordsViewerPage user={user} />} /> {/* New route */}
                 <Route path="*" element={<Navigate to="/dashboard" />} />
               </Routes>
             </Layout>

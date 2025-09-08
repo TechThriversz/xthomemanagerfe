@@ -44,6 +44,7 @@ export const createRecord = (record) => {
   return api.post('/record', { name: record.name, type: record.type }); // Only send name and type
 };
 export const deleteRecord = (id) => api.delete(`/record/${id}`);
+export const getViewerRecords = (userId) => api.get(`/record/viewer-records/${userId}`); // New endpoint
 
 // Milk API endpoints
 export const getMilk = (recordId) => api.get(`/milk/${recordId}`);
