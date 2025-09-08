@@ -1,7 +1,8 @@
+// src/components/Sidebar.jsx
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Typography, IconButton } from '@mui/material';
-import { Dashboard, ListAlt, LocalDining, LocalAtm, Home, Settings, People, History } from '@mui/icons-material';
+import { Dashboard, ListAlt, LocalDining, LocalAtm, Home, Settings, People, History, FolderShared } from '@mui/icons-material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { CONFIG } from '../../config';
 
@@ -26,7 +27,7 @@ function Sidebar({ user, currentRecordId }) {
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton onClick={handleClick} sx={{ color: '#72737E',  '&:hover': { color: '#888' }, '&.active': { bgcolor: '#F0F2F5', color: '#1A2A44' } }}>
+          <ListItemButton onClick={handleClick} sx={{ color: '#72737E', '&:hover': { color: '#888' }, '&.active': { bgcolor: '#F0F2F5', color: '#1A2A44' } }}>
             <ListItemIcon><ListAlt sx={{ color: '#72737E' }} /></ListItemIcon>
             <ListItemText primary="Records" />
             {openRecords ? <ExpandLess sx={{ color: '#72737E' }} /> : <ExpandMore sx={{ color: '#72737E' }} />}
@@ -66,32 +67,28 @@ function Sidebar({ user, currentRecordId }) {
                 </ListItemButton>
               </ListItem>
             )}
-            {user?.role === 'Viewer' && (
-              <ListItem disablePadding>
-                <ListItemButton component={NavLink} to="/invited-records" sx={{ pl: 4, color: '#72737E', '&.active': { bgcolor: '#F0F2F5', color: '#1A2A44' } }}>
-                  <ListItemIcon><ListAlt sx={{ color: '#72737E' }} /></ListItemIcon>
-                  <ListItemText primary="Invited Records" />
-                </ListItemButton>
-              </ListItem>
-            )}
           </List>
         </Collapse>
-        {user?.role === 'Admin' && (
-          <>
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/invite" sx={{ color: '#72737E', '&.active': { bgcolor: '#FAFAFA', color: '#1A2A44' } }}>
-                <ListItemIcon><People sx={{ color: '#72737E' }} /></ListItemIcon>
-                <ListItemText primary="Invite Viewer" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/settings" sx={{ color: '#72737E', '&.active': { bgcolor: '#FAFAFA', color: '#1A2A44' } }}>
-                <ListItemIcon><Settings sx={{ color: '#72737E' }} /></ListItemIcon>
-                <ListItemText primary="Settings" />
-              </ListItemButton>
-            </ListItem>
-          </>
+        {user?.role === 'Viewer' && (
+          <ListItem disablePadding>
+            <ListItemButton component={NavLink} to="/invited-records" sx={{ color: '#72737E', '&.active': { bgcolor: '#F0F2F5', color: '#1A2A44' } }}>
+              <ListItemIcon><FolderShared sx={{ color: '#72737E' }} /></ListItemIcon>
+              <ListItemText primary="Invited Records" />
+            </ListItemButton>
+          </ListItem>
         )}
+        <ListItem disablePadding>
+          <ListItemButton component={NavLink} to="/invite" sx={{ color: '#72737E', '&.active': { bgcolor: '#FAFAFA', color: '#1A2A44' } }}>
+            <ListItemIcon><People sx={{ color: '#72737E' }} /></ListItemIcon>
+            <ListItemText primary="Invite Viewer" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton component={NavLink} to="/settings" sx={{ color: '#72737E', '&.active': { bgcolor: '#FAFAFA', color: '#1A2A44' } }}>
+            <ListItemIcon><Settings sx={{ color: '#72737E' }} /></ListItemIcon>
+            <ListItemText primary="Settings" />
+          </ListItemButton>
+        </ListItem>
       </List>
 
       {/* User profile section at the bottom of the sidebar */}
@@ -110,10 +107,9 @@ function Sidebar({ user, currentRecordId }) {
             alt="User Profile"
             style={{ width: 40, height: 40, borderRadius: '50%', marginRight: 10, border: '2px solid #72737E' }}
           />
-          <Typography variant="body1" sx={{ color: '#1A2A44', fontWeight: 'medium',  }}>
+          <Typography variant="body1" sx={{ color: '#1A2A44', fontWeight: 'medium' }}>
             {user.fullName}
           </Typography>
-     
         </Box>
       )}
     </Box>

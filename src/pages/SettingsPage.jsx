@@ -38,8 +38,8 @@ function SettingsPage({ user, setUser }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await updateSettings({ milkRatePerLiter: parseFloat(settings.milkRatePerLiter) });
-     toast.success(response.message || 'Settings updated successfully', { position: 'top-right', autoClose: 3000 });
+      const response = await updateSettings({ milkRatePerLiter: parseFloat(settings.milkRatePerLiter) }); // Fixed response variable
+      toast.success(response.message || 'Settings updated successfully', { position: 'top-right', autoClose: 3000 });
       setError('');
     } catch (err) {
       toast.error(err.message || 'Failed to update settings.', { position: 'top-right', autoClose: 3000 });
@@ -67,7 +67,7 @@ function SettingsPage({ user, setUser }) {
       setUser(response.data); // Use the callback to update the global user state
       setError('');
     } catch (err) {
-       toast.error(err.message || 'Failed to update your profile', { position: 'top-right', autoClose: 3000 });
+      toast.error(err.message || 'Failed to update your profile', { position: 'top-right', autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -85,25 +85,23 @@ function SettingsPage({ user, setUser }) {
       {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#1a2a44', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
       {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
-      {user?.role === 'Admin' && (
-        <Box className="form-container">
-          <Typography variant="h6" sx={{ color: '#222222' }}>Milk Rate</Typography>
-          <form onSubmit={handleSettingsSubmit}>
-            <TextField
-              label="Milk Rate Per Liter (Rs)"
-              type="number"
-              fullWidth
-              margin="normal"
-              value={settings.milkRatePerLiter}
-              onChange={(e) => setSettings({ ...settings, milkRatePerLiter: e.target.value })}
-              sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
-            />
-            <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
-              Update Rate
-            </Button>
-          </form>
-        </Box>
-      )}
+      <Box className="form-container">
+        <Typography variant="h6" sx={{ color: '#222222' }}>Milk Rate</Typography>
+        <form onSubmit={handleSettingsSubmit}>
+          <TextField
+            label="Milk Rate Per Liter (Rs)"
+            type="number"
+            fullWidth
+            margin="normal"
+            value={settings.milkRatePerLiter}
+            onChange={(e) => setSettings({ ...settings, milkRatePerLiter: e.target.value })}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
+          />
+          <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }} disabled={loading}>
+            Update Rate
+          </Button>
+        </form>
+      </Box>
       <Box className="form-container" sx={{ mt: 4 }}>
         <Typography variant="h6" sx={{ color: '#222222' }}>Profile</Typography>
         {imageUrl && (

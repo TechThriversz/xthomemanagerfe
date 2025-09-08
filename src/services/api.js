@@ -31,10 +31,12 @@ export const login = (data) => {
 export const register = (data) => api.post('/auth/register', data);
 export const forgotPassword = (data) => api.post('/auth/forgot-password', data);
 export const resetPassword = (data) => api.post('/auth/reset-password', data);
-export const inviteViewer = (email, recordName) =>
-    api.post('/auth/invite', { email, recordName });
-export const revokeViewer = (viewerId, recordName) =>
-    api.post('/auth/revoke', { viewerId, recordName });
+// export const inviteViewer = (email, recordName) =>
+//     api.post('/auth/invite', { email, recordName });
+export const inviteViewer = (recordId, email) =>
+    api.post('/auth/invite', { RecordId: recordId, Email: email });
+export const revokeViewer = (viewerId, recordId) =>
+    api.post('/auth/revoke', { viewerId, recordId });
 export const getInvitedViewers = (adminId) => api.get(`/auth/invited-viewers/${adminId}`);
 
 // Record API endpoints
@@ -45,6 +47,7 @@ export const createRecord = (record) => {
 };
 export const deleteRecord = (id) => api.delete(`/record/${id}`);
 export const getViewerRecords = (userId) => api.get(`/record/viewer-records/${userId}`); // New endpoint
+export const getRecordDetails = (recordId) => api.get(`/record/details/${recordId}`);
 
 // Milk API endpoints
 export const getMilk = (recordId) => api.get(`/milk/${recordId}`);
