@@ -67,7 +67,7 @@ export function setCurrencySymbol(symbol) {
 }
 
 export const CONFIG = {
-    BASE_API_URL: import.meta.env.VITE_API_BASE_URL || 'https://localhost:7266',
+    BASE_API_URL: import.meta.env.VITE_API_BASE_URL || 'https://hmapi.somee.com',
     R2_BASE_URL: 'https://pub-867806bcf0914258bb29ce36f455004f.r2.dev',
     DUMMY_IMAGE_URL: 'https://themindfulaimanifesto.org/wp-content/uploads/2020/09/male-placeholder-image.jpeg',
     currencySymbol: getCurrencySymbol(),
