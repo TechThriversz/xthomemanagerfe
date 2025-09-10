@@ -23,7 +23,6 @@ function RecordDetail({ user }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log('RecordDetail: user:', user, 'recordId:', recordId);
     if (!user?.id) {
       setError('Please log in to view this page');
       navigate('/login');

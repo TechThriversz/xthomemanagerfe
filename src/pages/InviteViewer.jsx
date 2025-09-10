@@ -8,7 +8,8 @@ import '../App.css';
 
 function InviteViewer({ user }) {
   const [email, setEmail] = useState('');
-  const [selectedRecordId, setSelectedRecordId] = useState('');
+const [selectedRecord, setSelectedRecord] = useState({ id: '', name: '' });
+
   const [records, setRecords] = useState([]);
   const [invitedViewers, setInvitedViewers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -47,25 +48,26 @@ function InviteViewer({ user }) {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedRecordId) {
-      toast.error('Please select a record.', { position: 'top-right', autoClose: 3000 });
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await inviteViewer(selectedRecordId, email); // Updated to use recordId
-      toast.success(response.message || 'User has been invited successfully!', { position: 'top-right', autoClose: 3000 });
-      setEmail('');
-      setSelectedRecordId('');
-      fetchInvitedViewers();
-    } catch (err) {
-      toast.error(err.message || 'Failed to invite viewer', { position: 'top-right', autoClose: 3000 });
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!selectedRecord.id) {
+    toast.error('Please select a record.', { position: 'top-right', autoClose: 3000 });
+    return;
+  }
+  setLoading(true);
+  try {
+    await inviteViewer(email, selectedRecord.name, selectedRecord.id);
+    toast.success(response.message || 'User has been invited successfully!', { position: 'top-right', autoClose: 3000 });
+    setEmail('');
+    setSelectedRecord({ id: '', name: '' });
+    fetchInvitedViewers();
+  } catch (err) {
+    toast.error(err.message || message || 'Failed to invite viewer', { position: 'top-right', autoClose: 3000 });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 const handleRevoke = async (viewerId, recordId) => { // Changed recordName to recordId
   setLoading(true);
@@ -99,8 +101,11 @@ const handleRevoke = async (viewerId, recordId) => { // Changed recordName to re
           <Select
             label="Record"
             fullWidth
-            value={selectedRecordId}
-            onChange={(e) => setSelectedRecordId(e.target.value)}
+            value={selectedRecord.id}
+            onChange={(e) => {
+              const rec = records.find(r => r.id === e.target.value);
+              setSelectedRecord({ id: rec.id, name: rec.name });
+            }}
             required
             sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiSelect-select': { color: '#1a2a44' } }}
           >

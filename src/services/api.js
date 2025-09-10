@@ -25,7 +25,6 @@ api.interceptors.request.use((config) => {
 
 // Auth API endpoints
 export const login = (data) => {
-    console.log('API login request:', data);
     return api.post('/auth/login', data);
 };
 export const register = (data) => api.post('/auth/register', data);
@@ -33,8 +32,8 @@ export const forgotPassword = (data) => api.post('/auth/forgot-password', data);
 export const resetPassword = (data) => api.post('/auth/reset-password', data);
 // export const inviteViewer = (email, recordName) =>
 //     api.post('/auth/invite', { email, recordName });
-export const inviteViewer = (recordId, email) =>
-    api.post('/auth/invite', { RecordId: recordId, Email: email });
+export const inviteViewer = (email, recordName, recordId, ) =>
+    api.post('/auth/invite', { email, recordName, recordId });
 export const revokeViewer = (viewerId, recordId) =>
     api.post('/auth/revoke', { viewerId, recordId });
 export const getInvitedViewers = (adminId) => api.get(`/auth/invited-viewers/${adminId}`);
@@ -42,7 +41,7 @@ export const getInvitedViewers = (adminId) => api.get(`/auth/invited-viewers/${a
 // Record API endpoints
 export const getRecords = () => api.get('/record');
 export const createRecord = (record) => {
-  console.log('API createRecord payload:', record);
+
   return api.post('/record', { name: record.name, type: record.type }); // Only send name and type
 };
 export const deleteRecord = (id) => api.delete(`/record/${id}`);
@@ -52,7 +51,7 @@ export const getRecordDetails = (recordId) => api.get(`/record/details/${recordI
 // Milk API endpoints
 export const getMilk = (recordId) => api.get(`/milk/${recordId}`);
 export const createMilk = (data) => {
-    console.log('createMilk: Sending request with payload:', JSON.stringify(data));
+ 
     return api.post('/milk', data);
 };
 export const deleteMilk = (id) => api.delete(`/milk/${id}`);
@@ -60,7 +59,7 @@ export const deleteMilk = (id) => api.delete(`/milk/${id}`);
 // Bills API endpoints
 export const getBills = (recordId) => api.get(`/bills/${recordId}`);
 export const createBill = (bill) => {
-    console.log('API createBill payload:', bill);
+
     return api.post('/bills', bill, { headers: { 'Content-Type': 'multipart/form-data' } });
 };
 export const deleteBill = (id) => api.delete(`/bills/${id}`);
@@ -68,7 +67,7 @@ export const deleteBill = (id) => api.delete(`/bills/${id}`);
 // Rent API endpoints
 export const getRent = (recordId) => api.get(`/rent/${recordId}`);
 export const createRent = (rent) => {
-    console.log('API createRent payload:', rent);
+
     return api.post('/rent', rent);
 };
 export const deleteRent = (id) => api.delete(`/rent/${id}`);

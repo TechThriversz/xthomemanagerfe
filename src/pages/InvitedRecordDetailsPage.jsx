@@ -168,7 +168,7 @@ function InvitedRecordDetailsPage({ user }) {
       <Box sx={{ p: 4, borderRadius: '16px', boxShadow: 'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px', bgcolor: '#FFFFFF', mb: 4, textAlign: 'center' }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44', mb: 1 }}>{record.name}</Typography>
         <Typography variant="h6" sx={{ color: '#666' }}>{record.type} Record</Typography>
-        <Typography variant="body2" sx={{ mt: 2, color: '#888' }}>Created By: <b>{record.createdBy}</b></Typography>
+        <Typography variant="body2" sx={{ mt: 2, color: '#444' }}>Shared By: <b>{record.createdBy}</b></Typography>
       </Box>
 
       {/* KPI Boxes */}
