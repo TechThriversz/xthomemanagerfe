@@ -51,18 +51,28 @@ const [selectedRecord, setSelectedRecord] = useState({ id: '', name: '' });
 const handleSubmit = async (e) => {
   e.preventDefault();
   if (!selectedRecord.id) {
-    toast.error('Please select a record.', { position: 'top-right', autoClose: 3000 });
+    toast.error('Please select a record.');
     return;
   }
+
   setLoading(true);
   try {
-    await inviteViewer(email, selectedRecord.name, selectedRecord.id);
-    toast.success(response.message || 'User has been invited successfully!', { position: 'top-right', autoClose: 3000 });
+    const res = await inviteViewer(email, selectedRecord.name, selectedRecord.id);
+    const msg = res.data.Message;
+
+    if (msg.includes("already a viewer")) {
+      toast.warn(msg);
+    } else if (msg.includes("No password needed")) {
+      toast.success(`${email} added! They can accept the invite.`);
+    } else {
+      toast.success("Invitation sent with temp password!");
+    }
+
     setEmail('');
     setSelectedRecord({ id: '', name: '' });
     fetchInvitedViewers();
   } catch (err) {
-    toast.error(err.message || message || 'Failed to invite viewer', { position: 'top-right', autoClose: 3000 });
+    toast.error(err.response?.data?.Message || 'Failed to invite.');
   } finally {
     setLoading(false);
   }
