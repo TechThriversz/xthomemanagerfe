@@ -16,6 +16,7 @@ const countryToCurrencyMap = {
 // Function to get the currency symbol based on the currency code.
 function getSymbolFromCurrency(code) {
     if (!code) return undefined;
+    console.log("Getting symbol for currency code:", code);
     try {
         const formatter = new Intl.NumberFormat(undefined, {
             style: 'currency',
@@ -46,6 +47,7 @@ function getCurrencySymbol() {
         // Extract country code from locale (e.g., 'en-PK' -> 'PK')
         const countryCode = locale.split('-')[1]?.toUpperCase();
         const currencyCode = countryToCurrencyMap[countryCode];
+        console.log("Guessed country code:", countryCode, "Currency code:", currencyCode);
         const symbol = getSymbolFromCurrency(currencyCode);
         if (symbol) {
             return symbol;
