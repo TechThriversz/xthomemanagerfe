@@ -47,6 +47,11 @@ export const createRecord = (record) => {
 export const deleteRecord = (id) => api.delete(`/record/${id}`);
 export const getViewerRecords = (userId) => api.get(`/record/viewer-records/${userId}`); // New endpoint
 export const getRecordDetails = (recordId) => api.get(`/record/details/${recordId}`);
+export const acceptInvite = (recordId) => 
+  api.post(`/record/accept-invite/${recordId}`);
+
+export const declineInvite = (recordId) => 
+  api.post(`/record/decline-invite/${recordId}`);
 
 // Milk API endpoints
 export const getMilk = (recordId) => api.get(`/milk/${recordId}`);

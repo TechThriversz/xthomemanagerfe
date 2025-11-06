@@ -143,59 +143,72 @@ const handleRevoke = async (viewerId, recordId) => { // Changed recordName to re
           </Button>
         </form>
       </Box>
+<Box   className= 'invite-container' sx={{
+  mt: 4,
+  maxHeight: '500px',
+  overflow: 'hidden',
+  borderRadius: '16px',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+  bgcolor: '#FFFFFF',
+  marginBottom: '80px',
+  paddingBottom: '30px'
 
-      <Box className="invite-container">
-        <Typography variant="h6" sx={{ mt: 4, color: '#222222', fontWeight: 'bold' }}>Invited Viewers</Typography>
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
-            <CircularProgress sx={{ color: '#1A2A44' }} />
-          </Box>
-        ) : (
-          <List sx={{ width: '100%', mt: 2, p: 0 }}>
-            {invitedViewers.flatMap((viewer) =>
-              (viewer.records || []).map((record, index) => (
-                <Paper key={`${viewer.id}-${record.name}-${index}`} sx={{ mb: 2, borderRadius: '12px', border: '2px solid #ff9800', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                  <ListItem sx={{ py: 2, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <ListItemText
-                      primary={
-                        <>
-                          <span style={{ color: '#888', fontWeight: 400 }}>Name:</span>
-                          <span style={{ marginLeft: 6 }}>{viewer.fullName}</span>
-                          <br />
-                          <span style={{ color: '#888', fontWeight: 400 }}>Email:</span>
-                          <span style={{ marginLeft: 6 }}>{viewer.email}</span>
-                        </>
-                      }
-                      secondary={
-                        <span>
-                          <Typography sx={{ mt: 1 }} variant="body2" color="text.secondary">
-                            Record: <Typography component="span" fontWeight="medium">{record.name}</Typography>
-                          </Typography>
-                          <Chip
-                            label={record.isAccepted ? 'Accepted' : 'Pending'}
-                            sx={{
-                              bgcolor: record.isAccepted ? '#4caf50' : '#ff9800',
-                              color: '#fff',
-                              fontWeight: 'bold',
-                              borderRadius: '8px',
-                              mt: 1,
-                            }}
-                          />
-                        </span>
-                      }
-                      primaryTypographyProps={{ fontWeight: 'bold', color: '#1A2A44' }}
-                      secondaryTypographyProps={{ color: '#666' }}
-                    />
-                    <IconButton edge="end" aria-label="revoke" onClick={() => handleRevoke(viewer.id, record.id)}>
-                      <DeleteIcon sx={{ color: '#EF4444' }} />
-                    </IconButton>
-                  </ListItem>
-                </Paper>
-              ))
-            )}
-          </List>
-        )}
+}}>
+  <Box sx={{ p: 3, bgcolor: '#F8FAFC', borderBottom: '1px solid #E0E0E0' }}>
+    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
+      Invited Viewers
+    </Typography>
+  </Box>
+
+  <Box sx={{ maxHeight: '420px', overflowY: 'auto', py: 4}}>
+    {loading ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress sx={{ color: '#1A2A44' }} />
       </Box>
+    ) : invitedViewers.length === 0 ? (
+      <Typography sx={{ textAlign: 'center', color: '#888', py: 4 }}>
+        No one invited yet
+      </Typography>
+    ) : (
+      <List sx={{ p: 0 }}>
+        {invitedViewers.flatMap((viewer) =>
+          (viewer.records || []).map((record) => (
+            <Paper key={`${viewer.id}-${record.id}`} sx={{ mb: 2, p: 2, borderLeft: '4px solid #FF9800' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box sx={{textAlign: 'left', alignItems: 'flex-start' }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
+                    {viewer.fullName || viewer.email}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#666' }}>
+                    {viewer.email}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1, color: '#444' }}>
+                    Record: <strong>{record.name}</strong> ({record.type})
+                  </Typography>
+                  <Chip
+                    label={record.isAccepted ? 'Accepted' : 'Pending'}
+                    size="small"
+                    sx={{
+                      mt: 1,
+                      bgcolor: record.isAccepted ? '#10B981' : '#F59E0B',
+                      color: 'white'
+                    }}
+                  />
+                </Box>
+                <IconButton
+                  onClick={() => handleRevoke(viewer.id, record.id)}
+                  sx={{ color: '#EF4444' }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            </Paper>
+          ))
+        )}
+      </List>
+    )}
+  </Box>
+</Box>
     </>
   );
 }

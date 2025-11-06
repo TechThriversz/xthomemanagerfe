@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Button, CircularProgress } from '@mui/material';
-import { getViewerRecords } from '../services/api';
-import '../App.css';
+import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Button, CircularProgress, Chip } from '@mui/material';
+import { getViewerRecords, acceptInvite, declineInvite } from '../services/api';
+import { toast } from 'react-toastify';
 
 function RecordsViewerPage({ user }) {
   const navigate = useNavigate();
@@ -23,9 +23,33 @@ function RecordsViewerPage({ user }) {
       const response = await getViewerRecords(user.id);
       setRecords(response.data || []);
     } catch (error) {
-      console.error('Failed to fetch viewer records:', error);
+      toast.error('Failed to load invited records');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAccept = async (recordId) => {
+    try {
+      await acceptInvite(recordId);
+      toast.success("Accepted! You can now view this record.");
+      setRecords(prev => prev.map(r => 
+        r.id === recordId ? { ...r, isAccepted: true } : r
+      ));
+    } catch (err) {
+      toast.error("Failed to accept invite");
+    }
+  };
+
+  const handleDecline = async (recordId) => {
+    try {
+      await declineInvite(recordId);
+      toast.info("Invite declined");
+      setRecords(prev => prev.map(r => 
+        r.id === recordId ? { ...r, isAccepted: false, declined: true } : r
+      ));
+    } catch (err) {
+      toast.error("Failed to decline");
     }
   };
 
@@ -42,69 +66,98 @@ function RecordsViewerPage({ user }) {
       <Box sx={{
         p: 4,
         borderRadius: '16px',
-        boxShadow: 'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
         bgcolor: '#FFFFFF',
         mb: 4,
-        textAlign: 'center'
+        textAlign: 'center',
       }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44', mb: 1 }}>Invited Records</Typography>
-        <Typography variant="body1" sx={{ color: '#666' }}>View records you have been invited to manage.</Typography>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44', mb: 1 }}>
+          Invited Records
+        </Typography>
+        <Typography variant="body1" sx={{ color: '#666' }}>
+          View records shared with you
+        </Typography>
       </Box>
 
       {records.length === 0 ? (
-        <Box sx={{ p: 5, textAlign: 'center', bgcolor: '#F5F6FA', borderRadius: '16px' }}>
-          <Typography variant="h6" sx={{ color: '#444' }}>No invited records found.</Typography>
-          <Typography variant="body2" sx={{ color: '#888', mt: 1 }}>You haven't been invited to view any records yet.</Typography>
+        <Box sx={{ p: 8, textAlign: 'center', bgcolor: '#F8FAFC', borderRadius: '16px' }}>
+          <Typography variant="h6" sx={{ color: '#444' }}>No invitations yet</Typography>
+          <Typography variant="body2" sx={{ color: '#888', mt: 1 }}>
+            When someone invites you, it will appear here.
+          </Typography>
         </Box>
       ) : (
-        <Box sx={{ p: 4, borderRadius: '16px', boxShadow: 'rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px', bgcolor: '#FFFFFF' }}>
-          <Table>
+        <Box sx={{
+          p: 4,
+          borderRadius: '16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          bgcolor: '#FFFFFF',
+          maxHeight: '70vh',
+          overflow: 'hidden'
+        }}>
+          <Table stickyHeader>
             <TableHead>
-              <TableRow sx={{ bgcolor: '#F8FAFC', '& > th': { fontWeight: 'bold', color: '#1A2A44', borderBottom: 'none' } }}>
-                <TableCell>Name</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Action</TableCell>
+              <TableRow sx={{ bgcolor: '#F8FAFC' }}>
+                <TableCell sx={{ fontWeight: 'bold', color: '#1A2A44' }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: '#1A2A44' }}>Type</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: '#1A2A44' }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: '#1A2A44' }}>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {records.map((record, index) => (
-                <TableRow key={record.id} sx={{ '&:nth-of-type(odd)': { bgcolor: '#FFFFFF' }, '&:nth-of-type(even)': { bgcolor: '#F8FAFC' }, '& > td': { borderBottom: 'none' } }}>
+              {records.map((record) => (
+                <TableRow key={record.id} sx={{ '&:hover': { bgcolor: '#F8FAFC' } }}>
                   <TableCell>{record.name}</TableCell>
                   <TableCell>{record.type}</TableCell>
                   <TableCell>
-                    <Box component="span" sx={{
-                      color: record.isAccepted ? '#10B981' : '#F59E0B',
-                      bgcolor: record.isAccepted ? '#ECFDF5' : '#FEF3C7',
-                      px: 2, py: 0.5, borderRadius: '16px', fontWeight: 'bold'
-                    }}>
-                      {record.isAccepted ? 'Accepted' : 'Pending'}
-                    </Box>
+                    <Chip
+                      label={
+                        record.declined ? 'Declined' :
+                        record.isAccepted ? 'Accepted' : 'Pending'
+                      }
+                      size="small"
+                      sx={{
+                        bgcolor: record.declined ? '#EF4444' :
+                                 record.isAccepted ? '#10B981' : '#F59E0B',
+                        color: 'white',
+                        fontWeight: 'bold'
+                      }}
+                    />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      onClick={() => navigate(`/invited-record-details/${record.id}`)}
-                      disabled={!record.isAccepted}
-                      variant="contained"
-                      sx={{
-                        backgroundColor: '#1A2A44',
-                        color: '#FFFFFF',
-                        borderRadius: '8px',
-                        textTransform: 'none',
-                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                        '&:hover': {
-                          backgroundColor: '#101C31',
-                          boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15)',
-                        },
-                        '&.Mui-disabled': {
-                          backgroundColor: '#E0E0E0',
-                          color: '#A0A0A0',
-                          boxShadow: 'none',
-                        }
-                      }}
-                    >
-                      View
-                    </Button>
+                    {record.isAccepted ? (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => navigate(`/invited-record-details/${record.id}`)}
+                        sx={{ bgcolor: '#1A2A44', '&:hover': { bgcolor: '#101C31' } }}
+                      >
+                        View Record
+                      </Button>
+                    ) : record.declined ? (
+                      <Button disabled size="small" variant="outlined">
+                        Declined
+                      </Button>
+                    ) : (
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          sx={{ bgcolor: '#10B981', '&:hover': { bgcolor: '#059669' } }}
+                          onClick={() => handleAccept(record.id)}
+                        >
+                          Accept
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          onClick={() => handleDecline(record.id)}
+                        >
+                          Decline
+                        </Button>
+                      </Box>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

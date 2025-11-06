@@ -69,7 +69,7 @@ function Sidebar({ user, currentRecordId }) {
             )}
           </List>
         </Collapse>
-        {user?.role === 'Viewer' && (
+        {user  && (
           <ListItem disablePadding>
             <ListItemButton component={NavLink} to="/invited-records" sx={{ color: '#72737E', '&.active': { bgcolor: '#F0F2F5', color: '#1A2A44' } }}>
               <ListItemIcon><FolderShared sx={{ color: '#72737E' }} /></ListItemIcon>
