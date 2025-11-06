@@ -78,8 +78,8 @@ function RecordsPage({ user }) {
 
   return (
     <Box className="record-container" sx={{ p: 3 }}>
-      {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1A2A44' }} />}
-
+      
+{loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1A2A44' }} />}
       {records.length === 0 ? (
         <Box className="empty-state" sx={{ textAlign: 'center', maxWidth: '600px', mx: 'auto', mt: 4 }}>
           <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>Records</Typography>
@@ -109,6 +109,7 @@ function RecordsPage({ user }) {
           </Box>
         </Box>
       ) : (
+   
         <Box sx={{ p: 4, borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', bgcolor: '#FFFFFF', width: '1170px', m: 'auto', mt: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>Records</Typography>
