@@ -20,9 +20,10 @@ import ForgotPassword from './pages/ForgotPassword'; // NEW
 import ResetPassword from './pages/ResetPassword';   // NEW
 import RecordsViewerPage from './pages/RecordsViewerPage';
 import InvitedRecordDetailsPage from './pages/InvitedRecordDetailsPage';
-import AddPasswordPage from './pages/AddPasswordPage';
 import AddFamilyMemberPage from './pages/AddFamilyMemberPage';
 import MedicalRecordsPage from './pages/MedicalRecordsPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import PasswordVaultPage from './pages/PasswordVaultPage';
 
 function App() {
   const navigate = useNavigate();
@@ -33,7 +34,6 @@ function App() {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-       console.log('APP AUth USER GET:', storedUser, 'Token:', token);
     
     if (storedUser && token) {
       try {
@@ -120,9 +120,10 @@ function App() {
                 <Route path="invited-records" element={<RecordsViewerPage user={user} />} /> {/* New route */}
                 <Route path="invited-record-details/:recordId" element={<InvitedRecordDetailsPage user={user} />} /> {/* New route */}
                 <Route path="*" element={<Navigate to="/dashboard" />} />
-                <Route path="/add-password" element={<AddPasswordPage />} />
                 <Route path="/add-family" element={<AddFamilyMemberPage />} />
                 <Route path="/medical-records" element={<MedicalRecordsPage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path='/password-vault' element={<PasswordVaultPage />} />
               </Routes>
             </Layout>
           } />

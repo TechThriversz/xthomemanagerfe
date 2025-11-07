@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { 
   Dashboard, ListAlt, LocalDining, LocalAtm, Home, Settings, People, 
-  FolderShared, MedicalInformation, FamilyRestroom,  ExpandLess, ExpandMore, LockOutlined,HealthAndSafetyOutlined, GroupOutlined
+  FolderShared, MedicalInformation, FamilyRestroom, Lock,  ExpandLess, ExpandMore, LockOutlined,HealthAndSafetyOutlined, GroupOutlined, Group
 } from '@mui/icons-material';
 import { CONFIG } from '../../config';
 
@@ -17,7 +17,7 @@ function Sidebar({ user, currentRecordId }) {
   const imageUrl = user?.imagePath 
     ? `${R2_BASE_URL}/${user.imagePath.replace(/\\/g, '/')}` 
     : DUMMY_IMAGE_URL;
-
+const isAdmin = user?.role === 'Admin';
   return (
     <Box className="sidebar-layout">
       <List sx={{ paddingTop: 0 }}>
@@ -80,12 +80,12 @@ function Sidebar({ user, currentRecordId }) {
         <Divider sx={{ my: 2 }} />
 
         {/* FIXED ICONS */}
-        <ListItem disablePadding>
-          <ListItemButton component={NavLink} to="/add-password">
-            <ListItemIcon><LockOutlined sx={{ color: '#FF6B6B' }} /></ListItemIcon>
-            <ListItemText primary="Add Password" />
-          </ListItemButton>
-        </ListItem>
+<ListItem disablePadding>
+  <ListItemButton component={NavLink} to="/password-vault">
+    <ListItemIcon><Lock sx={{ color: '#FF6B6B' }} /></ListItemIcon>
+    <ListItemText primary="Password Vault" />
+  </ListItemButton>
+</ListItem>
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/add-family">
             <ListItemIcon><GroupOutlined sx={{ color: '#4ECDC4' }} /></ListItemIcon>
@@ -100,6 +100,14 @@ function Sidebar({ user, currentRecordId }) {
         </ListItem>
 
         <Divider sx={{ my: 2 }} />
+        {isAdmin && (
+          <ListItem disablePadding>
+            <ListItemButton component={NavLink} to="/admin/users">
+              <ListItemIcon><Group sx={{ color: '#FF6B6B' }} /></ListItemIcon>
+              <ListItemText primary="Users" />
+            </ListItemButton>
+          </ListItem>
+        )}
 
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/settings">

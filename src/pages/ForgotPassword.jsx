@@ -10,21 +10,21 @@ function ForgotPassword() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setMessage('');
-    try {
-      const res = await forgotPassword({ email });
-      setMessage(res.data.message);
-    } catch (err) {
-      console.error('Forgot password error:', err.response?.data || err.message);
-      setError('An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  setMessage('');
+  try {
+    await forgotPassword({ email });
+    setMessage("If an account exists, a reset link has been sent to your email.");
+  } catch (err) {
+    const msg = err.response?.data || err.message;
+    setError(typeof msg === 'string' ? msg : 'Failed to send reset link. Try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Box className="login-container">
