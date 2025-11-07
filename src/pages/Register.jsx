@@ -2,32 +2,36 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Alert, CircularProgress } from '@mui/material';
 import { register } from '../services/api';
+import { toast } from 'react-toastify';
 import '../App.css';
 
-function Register({ onRegister }) {
+function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [error, setError] = useState('');
+  const [captcha, setCaptcha] = useState('');
+  const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // === CAPTCHA LOGIC ===
+  const [num1, num2] = [Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      const res = await register({ email, password, fullName });
-      const { user, token } = res.data;
-      if (!user.id) {
-        throw new Error('Registration failed: User data missing');
-      }
-      // CRITICAL FIX: This calls the function in App.jsx which now handles all state and navigation.
-      onRegister(user, token);
+    if (parseInt(captcha) !== num1 + num2) {
+      toast.error("Incorrect answer. Try again.");
+      return;
+    }
 
+    setLoading(true);
+    try {
+      await register({ email, password, fullName });
+      toast.success("Registered successfully! Redirecting to login...");
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      console.error('Register error:', err.response?.data || err.message);
-      setError('Registration failed: ' + (err.response?.data?.message || err.response?.data || err.message));
+      const msg = err.response?.data?.Message || err.message;
+      toast.error(msg.includes("already exists") ? "Email already registered" : "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -39,55 +43,63 @@ function Register({ onRegister }) {
         <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222' }}>
           Register for XTHomeManager
         </Typography>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>
-            {error}
-          </Alert>
-        )}
-        <Box component="form" onSubmit={handleSubmit}>
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2 }}>
           <TextField
             label="Full Name"
             fullWidth
-            margin="normal"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
-            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <TextField
             label="Email"
             type="email"
             fullWidth
-            margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <TextField
             label="Password"
             type="password"
             fullWidth
-            margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
+
+          {/* CAPTCHA */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
+              {num1} + {num2} =
+            </Typography>
+            <TextField
+              size="small"
+              value={captcha}
+              onChange={(e) => setCaptcha(e.target.value.replace(/\D/g, ''))}
+              placeholder="?"
+              inputProps={{ maxLength: 2, style: { textAlign: 'center' } }}
+              sx={{ width: 60 }}
+              required
+            />
+          </Box>
+
           <Button
             type="submit"
             variant="contained"
             fullWidth
-            sx={{ mt: 2, py: 1.5, bgcolor: '#1a2a44', '&:hover': { bgcolor: '#1a2a44cc' } }}
-            disabled={loading}
+            disabled={loading || !captcha}
+            sx={{ mt: 1, py: 1.5, bgcolor: '#1A2A44', '&:hover': { bgcolor: '#101C31' } }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Register'}
           </Button>
+
           <Button
             variant="text"
             fullWidth
-            sx={{ mt: 1, color: '#1a2a44' }}
             onClick={() => navigate('/login')}
+            sx={{ color: '#1A2A44' }}
           >
             Already have an account? Login
           </Button>
@@ -98,4 +110,3 @@ function Register({ onRegister }) {
 }
 
 export default Register;
-

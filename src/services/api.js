@@ -91,3 +91,13 @@ export const updateUser = (id, formData) => api.put(`/user/${id}`, formData, {
 
 // Dashboard API endpoints
 export const getDashboardSummary = () => api.get('/dashboard/summary');
+
+// src/services/api.js
+export const getUsers = () => api.get('/admin/users');
+export const toggleUserStatus = (userId) => api.patch(`/admin/users/${userId}/toggle`);
+
+// src/services/api.js
+export const getPasswords = () => api.get('/password');
+export const addPassword = (data) => api.post('/password', data);
+export const updatePassword = (id, data) => api.put(`/password/${id}`, data);
+export const deletePassword = (id) => api.delete(`/password/${id}`);

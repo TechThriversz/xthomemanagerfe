@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Import Link
+import { useNavigate, Link } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Alert, CircularProgress } from '@mui/material';
 import { login } from '../services/api';
 import '../App.css';
@@ -18,14 +18,21 @@ function Login({ onLogin }) {
     try {
       const res = await login({ email, password });
       const { user, token } = res.data;
-      if (!user?.id) {
-        throw new Error('Login failed: User data missing');
+
+      if (!user?.id) throw new Error('Login failed');
+      if (!user.isActive) {
+        setError("Your account has been deactivated. Please contact Administration at techthrivers@gmail.com");
+        setLoading(false);
+        return;
       }
-      // The onLogin function will handle storing data and navigating
+
       onLogin(user, token);
     } catch (err) {
-      console.error('Login error:', err.response?.data || err.message);
-      setError('Invalid email or password');
+      const msg = err.response?.data || err.message;
+      setError(msg.includes("deactivated") 
+        ? "Your account has been deactivated. Please contact Administration at techthrivers@gmail.com"
+        : "Invalid email or password"
+      );
     } finally {
       setLoading(false);
     }
@@ -37,11 +44,27 @@ function Login({ onLogin }) {
         <Typography variant="h5" align="center" gutterBottom sx={{ color: '#222222' }}>
           Login to XTHomeManager
         </Typography>
+
         {error && (
-          <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>
-            {error}
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 2, 
+              bgcolor: '#FFF3E0', 
+              color: '#222222',
+              '& a': { color: '#1A2A44', fontWeight: 'bold', textDecoration: 'underline' }
+            }}
+            onClose={() => setError('')}
+          >
+            {error.includes("deactivated") ? (
+              <>
+                Your account has been deactivated. Please contact Administration at{' '}
+                <a href="mailto:techthrivers@gmail.com">techthrivers@gmail.com</a>
+              </>
+            ) : error}
           </Alert>
         )}
+
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             label="Email"
@@ -63,12 +86,13 @@ function Login({ onLogin }) {
             required
             sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
-          {/* NEW: Forgot Password Link */}
+
           <Box sx={{ textAlign: 'right', my: 1 }}>
-              <Link to="/forgot-password" style={{ color: '#1a2a44', textDecoration: 'none', fontWeight: 'bold' }}>
-                  Forgot Password?
-              </Link>
+            <Link to="/forgot-password" style={{ color: '#1a2a44', textDecoration: 'none', fontWeight: 'bold' }}>
+              Forgot Password?
+            </Link>
           </Box>
+
           <Button
             type="submit"
             variant="contained"
@@ -78,6 +102,7 @@ function Login({ onLogin }) {
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
           </Button>
+
           <Button
             variant="text"
             fullWidth
