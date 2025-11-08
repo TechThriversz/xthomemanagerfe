@@ -16,15 +16,20 @@ function AdminUsersPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const res = await getUsers();
-      setUsers(res.data);
+      const safeUsers = (res.data || []).map(u => ({
+        ...u,
+        isActive: !!u.isActive,
+        canUsePasswordVault: !!u.canUsePasswordVault,
+        canUseFamilyMembers: !!u.canUseFamilyMembers,
+        canUseMedicalRecords: !!u.canUseMedicalRecords,
+        isPro: !!u.isPro,
+        proUpgradeRequests: u.proUpgradeRequests || []
+      }));
+      setUsers(safeUsers);
     } catch (err) {
       setError('Failed to load users');
       toast.error('Could not load users');
@@ -33,10 +38,14 @@ function AdminUsersPage() {
     }
   };
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const handleToggleStatus = async (userId, currentStatus) => {
     try {
       await toggleUserStatus(userId);
-      setUsers(users.map(u => u.id === userId ? { ...u, isActive: !currentStatus } : u));
+      await fetchUsers(); // REFRESH
       toast.success(`User ${!currentStatus ? 'activated' : 'deactivated'}`);
     } catch {
       toast.error('Failed to update status');
@@ -46,13 +55,13 @@ function AdminUsersPage() {
   const handleTogglePermission = async (userId, permission, currentValue) => {
     try {
       const permissions = {
-        canUsePasswordVault: permission === 'passwordVault' ? !currentValue : users.find(u => u.id === userId).canUsePasswordVault,
-        canUseFamilyMembers: permission === 'familyMembers' ? !currentValue : users.find(u => u.id === userId).canUseFamilyMembers,
-        canUseMedicalRecords: permission === 'medicalRecords' ? !currentValue : users.find(u => u.id === userId).canUseMedicalRecords
+        canUsePasswordVault: permission === 'passwordVault' ? !currentValue : undefined,
+        canUseFamilyMembers: permission === 'familyMembers' ? !currentValue : undefined,
+        canUseMedicalRecords: permission === 'medicalRecords' ? !currentValue : undefined
       };
 
       await updateUserPermissions(userId, permissions);
-      setUsers(users.map(u => u.id === userId ? { ...u, ...permissions } : u));
+      await fetchUsers(); // REFRESH
       toast.success(`${permission} access ${!currentValue ? 'granted' : 'revoked'}`);
     } catch {
       toast.error('Failed to update permission');
@@ -67,12 +76,7 @@ function AdminUsersPage() {
   const approvePro = async (userId) => {
     try {
       await approveProUpgrade(userId);
-      setUsers(users.map(u => u.id === userId ? { 
-        ...u, 
-        isPro: true, 
-        proEndDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        proUpgradeRequests: u.proUpgradeRequests.map(r => r.status === 'Pending' ? { ...r, status: 'Approved' } : r)
-      } : u));
+      await fetchUsers(); // REFRESH
       setDialogOpen(false);
       toast.success('PRO approved for 1 year!');
     } catch {
@@ -81,6 +85,7 @@ function AdminUsersPage() {
   };
 
   const formatDate = (date) => {
+    if (!date) return '—';
     return new Date(date).toLocaleDateString('en-GB', { 
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' 
     });
@@ -113,90 +118,64 @@ function AdminUsersPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id} hover>
-                  <TableCell>{user.fullName || '—'}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Box sx={{ 
-                      bgcolor: user.role === 'Admin' ? '#FF6B6B' : '#4ECDC4',
-                      color: 'white',
-                      px: 1.5, py: 0.5,
-                      borderRadius: 1,
-                      fontSize: '0.8rem',
-                      display: 'inline-block'
-                    }}>
-                      {user.role}
-                    </Box>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Switch
-                      checked={user.isActive}
-                      onChange={() => handleToggleStatus(user.id, user.isActive)}
-                      color="primary"
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Switch
-                      checked={user.canUsePasswordVault}
-                      onChange={() => handleTogglePermission(user.id, 'passwordVault', user.canUsePasswordVault)}
-                      color="success"
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Switch
-                      checked={user.canUseFamilyMembers}
-                      onChange={() => handleTogglePermission(user.id, 'familyMembers', user.canUseFamilyMembers)}
-                      color="warning"
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Switch
-                      checked={user.canUseMedicalRecords}
-                      onChange={() => handleTogglePermission(user.id, 'medicalRecords', user.canUseMedicalRecords)}
-                      color="error"
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    {user.proUpgradeRequests?.some(r => r.status === 'Pending') ? (
-                      <IconButton size="small" onClick={() => openRequestDialog(user)}>
-                        <Badge badgeContent="!" color="error">
-                          <Upgrade fontSize="small" />
-                        </Badge>
-                      </IconButton>
-                    ) : user.isPro ? (
-                      <CheckCircle sx={{ color: '#4CAF50' }} />
-                    ) : (
-                      <Box sx={{ color: '#9E9E9E' }}>—</Box>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {users.map((user) => {
+                const hasPendingRequest = user.proUpgradeRequests?.some(r => r.status === 'Pending');
+                return (
+                  <TableRow key={user.id} hover>
+                    <TableCell>{user.fullName || '—'}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Box sx={{ 
+                        bgcolor: user.role === 'Admin' ? '#FF6B6B' : '#4ECDC4',
+                        color: 'white', px: 1.5, py: 0.5, borderRadius: 1, fontSize: '0.8rem', display: 'inline-block'
+                      }}>
+                        {user.role}
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Switch checked={user.isActive} onChange={() => handleToggleStatus(user.id, user.isActive)} />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Switch checked={user.canUsePasswordVault} onChange={() => handleTogglePermission(user.id, 'passwordVault', user.canUsePasswordVault)} color="success" />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Switch checked={user.canUseFamilyMembers} onChange={() => handleTogglePermission(user.id, 'familyMembers', user.canUseFamilyMembers)} color="warning" />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Switch checked={user.canUseMedicalRecords} onChange={() => handleTogglePermission(user.id, 'medicalRecords', user.canUseMedicalRecords)} color="error" />
+                    </TableCell>
+                    <TableCell align="center">
+                      {hasPendingRequest ? (
+                        <IconButton size="small" onClick={() => openRequestDialog(user)}>
+                          <Badge badgeContent="!" color="error"><Upgrade fontSize="small" /></Badge>
+                        </IconButton>
+                      ) : user.isPro ? (
+                        <CheckCircle sx={{ color: '#4CAF50' }} />
+                      ) : (
+                        <Box sx={{ color: '#9E9E9E' }}>—</Box>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
       )}
 
-      {/* PRO UPGRADE POPUP */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ bgcolor: '#1A2A44', color: 'white' }}>
-          PRO Upgrade Request
-        </DialogTitle>
+        <DialogTitle sx={{ bgcolor: '#1A2A44', color: 'white' }}>PRO Upgrade Request</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
             <Typography><strong>User:</strong> {selectedUser?.fullName}</Typography>
             <Typography><strong>Phone:</strong> {selectedUser?.phoneNumber || '—'}</Typography>
             <Typography><strong>Email:</strong> {selectedUser?.email}</Typography>
-            <Typography><strong>Requested:</strong> {selectedUser?.proUpgradeRequests?.[0]?.requestDate ? formatDate(selectedUser.proUpgradeRequests[0].requestDate) : '—'}</Typography>
+            <Typography><strong>Requested:</strong> {formatDate(selectedUser?.proUpgradeRequests?.find(r => r.status === 'Pending')?.requestDate)}</Typography>
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Close</Button>
-          <Button 
-            variant="contained" 
-            color="success"
-            onClick={() => approvePro(selectedUser?.id)}
-          >
+          <Button variant="contained" color="success" onClick={() => approvePro(selectedUser?.id)}>
             Approve 1-Year PRO
           </Button>
         </DialogActions>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Typography, TextField, Button, Alert, Box, CircularProgress } from '@mui/material';
+import { Upgrade } from '@mui/icons-material';
 import { getSettings, updateSettings, updateUser } from '../services/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -149,6 +150,19 @@ function SettingsPage({ user, setUser }) {
           </Button>
         </form>
       </Box>
+{!user?.isPro && (
+  <Box sx={{ mt: 4, textAlign: 'center' }}>
+    <Button
+      variant="contained"
+      size="large"
+      startIcon={<Upgrade />}
+      onClick={() => window.location.href = '/upgrade'}
+      sx={{ bgcolor: '#1A2A44', borderRadius: 50, px: 4 }}
+    >
+      Upgrade to PRO
+    </Button>
+  </Box>
+)}
     </Box>
   );
 }
