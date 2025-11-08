@@ -11,12 +11,16 @@ const securityOptions = [
   { value: 'AuthApp', label: 'Authenticator App' }
 ];
 
+const categories = ['Bank', 'Social', 'Email', 'Website', 'Other'];
+
 function PasswordForm({ password, onSave, onCancel }) {
   const [form, setForm] = useState({
     accountName: '',
     email: '',
     username: '',
     password: '',
+    category: '',
+    url: '',
     securityMethod: '',
     securityValue: '',
     associatedPhone: '',
@@ -31,6 +35,8 @@ function PasswordForm({ password, onSave, onCancel }) {
       email: password.email || '',
       username: password.username || '',
       password: '', // NEVER pre-fill password
+      category: password.category || '',
+      url: password.url || '',
       securityMethod: password.securityMethod || '',
       securityValue: password.securityValue || '',
       associatedPhone: password.associatedPhone || '',
@@ -112,6 +118,26 @@ function PasswordForm({ password, onSave, onCancel }) {
         fullWidth
         required={!password}
       />
+      <FormControl fullWidth margin="normal">
+  <InputLabel>Category</InputLabel>
+  <Select
+    value={form.category || ''}
+    onChange={(e) => handleChange('category', e.target.value)}
+  >
+    {categories.map(cat => (
+      <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+    ))}
+  </Select>
+</FormControl>
+
+<TextField
+  label="Website URL"
+  fullWidth
+  margin="normal"
+  value={form.url || ''}
+  onChange={(e) => handleChange('url', e.target.value)}
+  placeholder="https://gmail.com"
+/>
 
       <TextField
         select

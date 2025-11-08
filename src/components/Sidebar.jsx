@@ -18,13 +18,18 @@ function Sidebar({ user, currentRecordId }) {
     ? `${R2_BASE_URL}/${user.imagePath.replace(/\\/g, '/')}` 
     : DUMMY_IMAGE_URL;
 const isAdmin = user?.role === 'Admin';
+const canUse = {
+  passwordVault: user?.canUsePasswordVault,
+  familyMembers: user?.canUseFamilyMembers,
+  medicalRecords: user?.canUseMedicalRecords
+};
   return (
     <Box className="sidebar-layout">
       <List sx={{ paddingTop: 0 }}>
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/dashboard">
-            <ListItemIcon><Dashboard /></ListItemIcon>
-            <ListItemText primary="Dashboard" />
+            <ListItemIcon><Dashboard  sx={{ color: '#4A90E2' }} /></ListItemIcon>
+            <ListItemText  primary="Dashboard" />
           </ListItemButton>
         </ListItem>
 
@@ -39,25 +44,25 @@ const isAdmin = user?.role === 'Admin';
           <List component="div" disablePadding>
             <ListItem disablePadding>
               <ListItemButton component={NavLink} to="/records" sx={{ pl: 4 }}>
-                <ListItemIcon><ListAlt /></ListItemIcon>
+                <ListItemIcon><ListAlt  sx={{ color: '#F5A623' }} /></ListItemIcon>
                 <ListItemText primary="All Records" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton component={NavLink} to="/milk" sx={{ pl: 4 }}>
-                <ListItemIcon><LocalDining /></ListItemIcon>
+                <ListItemIcon><LocalDining  sx={{ color: '#90A4AE' }}/></ListItemIcon>
                 <ListItemText primary="Milk" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton component={NavLink} to="/rent" sx={{ pl: 4 }}>
-                <ListItemIcon><Home /></ListItemIcon>
+                <ListItemIcon><Home  sx={{ color: '#FF5252' }}/></ListItemIcon>
                 <ListItemText primary="Rent" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton component={NavLink} to="/bills" sx={{ pl: 4 }}>
-                <ListItemIcon><LocalAtm /></ListItemIcon>
+                <ListItemIcon><LocalAtm  sx={{ color: '#66BB6A' }}/></ListItemIcon>
                 <ListItemText primary="Bills" />
               </ListItemButton>
             </ListItem>
@@ -66,13 +71,13 @@ const isAdmin = user?.role === 'Admin';
 
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/invited-records">
-            <ListItemIcon><FolderShared /></ListItemIcon>
+            <ListItemIcon><FolderShared sx={{ color: '#AB47BC' }}/></ListItemIcon>
             <ListItemText primary="Invited Records" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/invite">
-            <ListItemIcon><People /></ListItemIcon>
+            <ListItemIcon><People sx={{ color: '#26C6DA' }}/></ListItemIcon>
             <ListItemText primary="Invite Viewer" />
           </ListItemButton>
         </ListItem>
@@ -80,24 +85,60 @@ const isAdmin = user?.role === 'Admin';
         <Divider sx={{ my: 2 }} />
 
         {/* FIXED ICONS */}
-<ListItem disablePadding>
+        {canUse.passwordVault ? (
+          <ListItem disablePadding>
   <ListItemButton component={NavLink} to="/password-vault">
     <ListItemIcon><Lock sx={{ color: '#FF6B6B' }} /></ListItemIcon>
     <ListItemText primary="Password Vault" />
   </ListItemButton>
 </ListItem>
-        <ListItem disablePadding>
+
+        ):(
+          <ListItem disablePadding disabled>
+  <ListItemButton component={NavLink} to="/password-vault">
+    <ListItemIcon><Lock sx={{ color: '#888', opacity: 0.4 }} /></ListItemIcon>
+    <ListItemText sx={{opacity: 0.4 }} primary="Password Vault" />
+  </ListItemButton>
+</ListItem>
+
+        )}
+        {canUse.familyMembers ? (
+            <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/add-family">
             <ListItemIcon><GroupOutlined sx={{ color: '#4ECDC4' }} /></ListItemIcon>
             <ListItemText primary="Add Family Member" />
           </ListItemButton>
+          
         </ListItem>
-        <ListItem disablePadding>
+        ):(
+             <ListItem disablePadding disabled>
+          <ListItemButton component={NavLink} to="/add-family">
+            <ListItemIcon><GroupOutlined sx={{ color: '#888', opacity: 0.4 }} /></ListItemIcon>
+            <ListItemText  sx={{opacity: 0.4 }} primary="Add Family Member" />
+          </ListItemButton>
+      
+        </ListItem>
+        )}
+
+      
+
+          {canUse.medicalRecords ? (
+             <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/medical-records">
             <ListItemIcon><HealthAndSafetyOutlined sx={{ color: '#45B7D1' }} /></ListItemIcon>
             <ListItemText primary="Medical Records" />
           </ListItemButton>
         </ListItem>
+          ):(
+             <ListItem disablePadding disabled>
+          <ListItemButton component={NavLink} to="/medical-records">
+            <ListItemIcon><HealthAndSafetyOutlined sx={{ color: '#888', opacity: 0.4 }} /></ListItemIcon>
+            <ListItemText  sx={{opacity: 0.4 }} primary="Medical Records" />
+          </ListItemButton>
+    
+        </ListItem>
+          )}
+       
 
         <Divider sx={{ my: 2 }} />
         {isAdmin && (
@@ -111,7 +152,7 @@ const isAdmin = user?.role === 'Admin';
 
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/settings">
-            <ListItemIcon><Settings /></ListItemIcon>
+            <ListItemIcon><Settings sx={{ color: '#78909C' }}/></ListItemIcon>
             <ListItemText primary="Settings" />
           </ListItemButton>
         </ListItem>

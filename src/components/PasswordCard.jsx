@@ -164,6 +164,34 @@ export default function PasswordCard({ password, onEdit, onDelete, expanded, onT
                         </Tooltip>
                     </DataRow>
                 </Box>
+                {password.url && (
+  <Typography variant="body2" color="primary" sx={{ mb: 1 }}>
+    Link: <Link href={password.url} target="_blank">{password.url}</Link>
+  </Typography>
+)}
+  <Box sx={{ mt: 2, px: 1 }}>
+
+<Chip
+  label={password.category}
+  size="small"
+  sx={{
+    bgcolor: {
+      Bank: '#4CAF50',
+      Social: '#2196F3',
+      Email: '#FF9800',
+      Website: '#9C27B0',
+      Other: '#607D8B'
+    }[password.category] + '22',
+    color: {
+      Bank: '#2E7D32',
+      Social: '#1565C0',
+      Email: '#F57C00',
+      Website: '#6A1B9A',
+      Other: '#455A64'
+    }[password.category]
+  }}
+/>
+</Box>
                 
                 {/* --- 2FA CHIP --- */}
                 {password.securityMethod && (

@@ -16,14 +16,15 @@ import SettingsPage from './pages/SettingsPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import InviteViewer from './pages/InviteViewer';
-import ForgotPassword from './pages/ForgotPassword'; // NEW
-import ResetPassword from './pages/ResetPassword';   // NEW
+import ForgotPassword from './pages/ForgotPassword'; 
+import ResetPassword from './pages/ResetPassword'; 
 import RecordsViewerPage from './pages/RecordsViewerPage';
 import InvitedRecordDetailsPage from './pages/InvitedRecordDetailsPage';
 import AddFamilyMemberPage from './pages/AddFamilyMemberPage';
 import MedicalRecordsPage from './pages/MedicalRecordsPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import PasswordVaultPage from './pages/PasswordVaultPage';
+import UpgradePage from './pages/UpgradePage';
 
 function App() {
   const navigate = useNavigate();
@@ -124,6 +125,7 @@ function App() {
                 <Route path="/medical-records" element={<MedicalRecordsPage />} />
                 <Route path="/admin/users" element={<AdminUsersPage />} />
                 <Route path='/password-vault' element={<PasswordVaultPage />} />
+                <Route path="/upgrade" element={<UpgradePage user={user} />} />
               </Routes>
             </Layout>
           } />
