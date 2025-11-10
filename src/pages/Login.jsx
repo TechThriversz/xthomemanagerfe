@@ -59,7 +59,7 @@ function Login({ onLogin }) {
             {error.includes("deactivated") ? (
               <>
                 Your account has been deactivated. Please contact Administration at{' '}
-                <a href="mailto:techthrivers@gmail.com">techthrivers@gmail.com</a>
+                <a href="mailto:techthrivers@gmail.com">SUPPORT</a>
               </>
             ) : error}
           </Alert>

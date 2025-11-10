@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Box, Typography, IconButton, Button, Chip, Divider, Collapse, Avatar, Tooltip } from '@mui/material';
+import { Card, CardContent, Box, Typography, IconButton, Button, Chip, Divider, Collapse, Avatar, Tooltip,Link } from '@mui/material';
 import { 
     Visibility, 
     VisibilityOff, 
@@ -93,13 +93,13 @@ export default function PasswordCard({ password, onEdit, onDelete, expanded, onT
         }
     };
 
-        const getTextBefore = () => {
-        switch (password.securityValue) {
-            case 'Phone': return "PhoneNo:";
-            case 'Email': return "Email:";
-            default: return "Auth APP:";
-        }
-    };
+  const getTextBefore = () => {
+  switch (password.securityMethod) {
+    case 'Phone': return "PhoneNo:";
+    case 'Email': return "Email:";
+    default: return "Auth APP:";
+  }
+};
 
     return (
         <Card sx={{ borderRadius: 4, boxShadow: '0 8px 32px rgba(0,0,0,0.07)', position: 'relative', overflow: 'hidden' }}>

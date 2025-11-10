@@ -52,21 +52,22 @@ function AdminUsersPage() {
     }
   };
 
-  const handleTogglePermission = async (userId, permission, currentValue) => {
-    try {
-      const permissions = {
-        canUsePasswordVault: permission === 'passwordVault' ? !currentValue : undefined,
-        canUseFamilyMembers: permission === 'familyMembers' ? !currentValue : undefined,
-        canUseMedicalRecords: permission === 'medicalRecords' ? !currentValue : undefined
-      };
+const handleTogglePermission = async (userId, permission, currentValue) => {
+  try {
+    const currentUser = users.find(u => u.id === userId);
+    const permissions = {
+      canUsePasswordVault: permission === 'passwordVault' ? !currentValue : currentUser.canUsePasswordVault,
+      canUseFamilyMembers: permission === 'familyMembers' ? !currentValue : currentUser.canUseFamilyMembers,
+      canUseMedicalRecords: permission === 'medicalRecords' ? !currentValue : currentUser.canUseMedicalRecords
+    };
 
-      await updateUserPermissions(userId, permissions);
-      await fetchUsers(); // REFRESH
-      toast.success(`${permission} access ${!currentValue ? 'granted' : 'revoked'}`);
-    } catch {
-      toast.error('Failed to update permission');
-    }
-  };
+    await updateUserPermissions(userId, permissions);
+    await fetchUsers();
+    toast.success(`${permission} access ${!currentValue ? 'granted' : 'revoked'}`);
+  } catch {
+    toast.error('Failed to update permission');
+  }
+};
 
   const openRequestDialog = (user) => {
     setSelectedUser(user);
@@ -74,15 +75,15 @@ function AdminUsersPage() {
   };
 
   const approvePro = async (userId) => {
-    try {
-      await approveProUpgrade(userId);
-      await fetchUsers(); // REFRESH
-      setDialogOpen(false);
-      toast.success('PRO approved for 1 year!');
-    } catch {
-      toast.error('Failed to approve');
-    }
-  };
+  try {
+    await approveProUpgrade(userId);
+    await refreshUser(); // Refresh current user
+    await fetchUsers();
+    toast.success('PRO approved for 1 year!');
+  } catch {
+    toast.error('Failed to approve');
+  }
+};
 
   const formatDate = (date) => {
     if (!date) return '—';

@@ -1,14 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions,  CircularProgress } from '@mui/material';
-import { Lock as LockIcon } from '@mui/icons-material';
-import { Add, Upgrade } from '@mui/icons-material';
+// src/pages/PasswordVaultPage.jsx
+import { useState, useEffect } from 'react';
+import { 
+  Box, Typography, Button, CircularProgress, Dialog, DialogTitle, 
+  DialogContent, DialogActions 
+} from '@mui/material';
+import { Lock as LockIcon, Add, Upgrade } from '@mui/icons-material';
 import { getPasswords, addPassword, updatePassword, deletePassword } from '../services/api';
 import { toast } from 'react-toastify';
 import PasswordForm from '../components/PasswordForm';
 import PasswordCard from '../components/PasswordCard';
 import UpgradeBadge from '../components/UpgradeBadge';
 
-function PasswordVaultPage({ user }) {
+function PasswordVaultPage({ user, refreshUser }) {
   const [passwords, setPasswords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -18,7 +21,7 @@ function PasswordVaultPage({ user }) {
   const [showPassword, setShowPassword] = useState({});
 
   useEffect(() => {
-    if (user?.canUsePasswordVault) {
+    if (user?.isPro && user?.canUsePasswordVault) {
       fetchPasswords();
     } else {
       setLoading(false);
@@ -29,15 +32,13 @@ function PasswordVaultPage({ user }) {
     try {
       setLoading(true);
       const res = await getPasswords();
-      const data = (res.data || []).map(p => ({
+      setPasswords((res.data || []).map(p => ({
         ...p,
         decryptedPassword: p.decryptedPassword,
         securityQuestions: p.securityQuestions || []
-      }));
-      const shuffled = data.sort(() => 0.5 - Math.random());
-      setPasswords(shuffled);
+      })));
     } catch (err) {
-      console.error(err);
+      toast.error('Failed to load passwords');
       setPasswords([]);
     } finally {
       setLoading(false);
@@ -65,8 +66,8 @@ function PasswordVaultPage({ user }) {
 
   if (loading) return <Box sx={{ textAlign: 'center', mt: 4 }}><CircularProgress /></Box>;
 
-  // BLOCKED: UPGRADE CARD
-  if (!user?.canUsePasswordVault) {
+  // LOCKED: NOT PRO OR NO PERMISSION
+  if (!user?.isPro || !user?.canUsePasswordVault) {
     return (
       <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
@@ -130,7 +131,7 @@ function PasswordVaultPage({ user }) {
         </Button>
       </Box>
 
-      {/* EMPTY STATE — MATCHES RECORDS PAGE */}
+      {/* EMPTY STATE */}
       {passwords.length === 0 ? (
         <Box sx={{ 
           textAlign: 'center', 

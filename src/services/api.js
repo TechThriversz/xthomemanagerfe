@@ -88,6 +88,7 @@ export const updateSettings = (settings) => api.post('/settings', settings);
 export const updateUser = (id, formData) => api.put(`/user/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
 });
+export const getCurrentUser = () => api.get('/user/me');
 
 // Dashboard API endpoints
 export const getDashboardSummary = () => api.get('/dashboard/summary');
@@ -98,7 +99,7 @@ export const toggleUserStatus = (userId) => api.patch(`/admin/users/${userId}/to
 export const updateUserPermissions = (userId, permissions) => {
   return api.patch(`/admin/users/${userId}/permissions`, permissions);
 };
-// api.js
+
 export const requestProUpgrade = () => api.post('/admin/upgrade/request');
 export const approveProUpgrade = (userId) => api.post(`/admin/upgrade/approve/${userId}`);
 
@@ -107,4 +108,26 @@ export const getPasswords = () => api.get('/password');
 export const addPassword = (data) => api.post('/password', data);
 export const updatePassword = (id, data) => api.put(`/password/${id}`, data);
 export const deletePassword = (id) => api.delete(`/password/${id}`);
+
+
+// Family Member API endpoints
+// Family Tree
+export const getFamilyTree = () => api.get('/family/tree');
+export const addFamilyMember = (data) => api.post('/family/tree', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const updateFamilyMember = (id, data) => api.put(`/family/tree/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const deleteFamilyMember = (id) => api.delete(`/family/tree/${id}`);
+
+// Other Members
+export const getOtherMembers = () => api.get('/othermember');
+export const addOtherMember = (data) => api.post('/othermember', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const updateOtherMember = (id, data) => api.put(`/othermember/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+});
+export const deleteOtherMember = (id) => api.delete(`/othermember/${id}`);
 

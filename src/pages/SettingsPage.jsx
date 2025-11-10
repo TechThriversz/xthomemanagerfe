@@ -9,7 +9,7 @@ import { CONFIG } from '../../config'; // Adjust path based on your project stru
 
 function SettingsPage({ user, setUser }) {
   const [settings, setSettings] = useState({ milkRatePerLiter: 0 });
-  const [userForm, setUserForm] = useState({ fullName: user?.fullName || '', password: '', image: null });
+  const [userForm, setUserForm] = useState({ fullName: user?.fullName || '', phoneNumber: user?.phoneNumber || '', password: '', image: null });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,7 +34,9 @@ function SettingsPage({ user, setUser }) {
       setLoading(false);
     }
   };
-
+const daysLeft = user?.proEndDate 
+  ? Math.ceil((new Date(user.proEndDate) - new Date()) / 86400000) 
+  : 0;
   const handleSettingsSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -60,6 +62,7 @@ function SettingsPage({ user, setUser }) {
     try {
       const formData = new FormData();
       formData.append('fullName', userForm.fullName);
+      if (userForm.phoneNumber) formData.append('phoneNumber', userForm.phoneNumber);
       if (userForm.password) formData.append('password', userForm.password);
       if (userForm.image) formData.append('image', userForm.image);
       const response = await updateUser(user.id, formData);
@@ -81,11 +84,29 @@ function SettingsPage({ user, setUser }) {
   return (
     <Box className="settings-container">
       <Typography variant="h4" gutterBottom align="center" sx={{ color: '#222222' }}>
-        Settings
+      SETTING SCREEN
       </Typography>
       {error && <Alert severity="error" sx={{ mb: 2, bgcolor: '#FFF3E0', color: '#222222' }} onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2, bgcolor: '#1a2a44', color: '#FFF' }} onClose={() => setSuccess('')}>{success}</Alert>}
       {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2, color: '#1a2a44' }} />}
+      {/* UPGRADE TO PRO */}
+{user?.isPro && (
+  <Box sx={{ mt: 4, mb:4, p: 3, bgcolor: '#f0f7ff', borderRadius: 2, textAlign: 'center' }}>
+    <Typography variant="h6" sx={{ color: '#1A2A44', fontWeight: 'bold' }}>
+      You are on <span style={{ color: '#4CAF50' }}>XTHomeManager PRO</span>
+    </Typography>
+    <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1A2A44', mt: 1 }}>
+      {daysLeft} <span style={{ fontSize: '1rem' }}>days left</span>
+    </Typography>
+    <Typography color="text.secondary">
+      <span style={{color: 'orange', fontWeight:'bold'}}>Expires:</span> {new Date(user.proEndDate).toLocaleDateString('en-GB')}
+    </Typography>
+  </Box>
+)}
+{/* ENDS UPGRADE TO PRO */}
+
+
+
       <Box className="form-container">
         <Typography variant="h6" sx={{ color: '#222222' }}>Milk Rate</Typography>
         <form onSubmit={handleSettingsSubmit}>
@@ -103,7 +124,7 @@ function SettingsPage({ user, setUser }) {
           </Button>
         </form>
       </Box>
-      <Box className="form-container" sx={{ mt: 4 }}>
+      <Box className="form-container" sx={{ mt: 4, mb:4 }}>
         <Typography variant="h6" sx={{ color: '#222222' }}>Profile</Typography>
         {imageUrl && (
           <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
@@ -119,12 +140,21 @@ function SettingsPage({ user, setUser }) {
           </Box>
         )}
         <form onSubmit={handleUserSubmit}>
-          <TextField
+         
+            <TextField
             label="Full Name"
             fullWidth
             margin="normal"
             value={userForm.fullName}
             onChange={(e) => setUserForm({ ...userForm, fullName: e.target.value })}
+            sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
+          />
+           <TextField
+            label="Phone Number"
+            fullWidth
+            margin="normal"
+            value={userForm.phoneNumber}
+            onChange={(e) => setUserForm({ ...userForm, phoneNumber: e.target.value })}
             sx={{ '& .MuiInputLabel-root': { color: '#222222' }, '& .MuiInputBase-input': { color: '#1a2a44' } }}
           />
           <TextField
@@ -150,19 +180,7 @@ function SettingsPage({ user, setUser }) {
           </Button>
         </form>
       </Box>
-{!user?.isPro && (
-  <Box sx={{ mt: 4, textAlign: 'center' }}>
-    <Button
-      variant="contained"
-      size="large"
-      startIcon={<Upgrade />}
-      onClick={() => window.location.href = '/upgrade'}
-      sx={{ bgcolor: '#1A2A44', borderRadius: 50, px: 4 }}
-    >
-      Upgrade to PRO
-    </Button>
-  </Box>
-)}
+
     </Box>
   );
 }

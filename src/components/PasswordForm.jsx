@@ -1,6 +1,9 @@
 // src/components/PasswordForm.jsx
 import { useState, useEffect } from 'react';
-import { Box, TextField, Button, MenuItem, IconButton, Typography } from '@mui/material';
+import { 
+  Box, TextField, Button, MenuItem, IconButton, Typography, 
+  FormControl, Select, InputLabel 
+} from '@mui/material';
 import { Add, Remove } from '@mui/icons-material';
 import { addPassword, updatePassword } from '../services/api';
 import { toast } from 'react-toastify';
@@ -28,27 +31,27 @@ function PasswordForm({ password, onSave, onCancel }) {
     securityQuestions: [{ question: '', answer: '' }]
   });
 
- useEffect(() => {
-  if (password) {
-    setForm({
-      accountName: password.accountName || '',
-      email: password.email || '',
-      username: password.username || '',
-      password: '', // NEVER pre-fill password
-      category: password.category || '',
-      url: password.url || '',
-      securityMethod: password.securityMethod || '',
-      securityValue: password.securityValue || '',
-      associatedPhone: password.associatedPhone || '',
-      recoveryEmail: password.recoveryEmail || '',
-      securityQuestions: Array.isArray(password.securityQuestions)
-        ? password.securityQuestions
-        : password.securityQuestions
-          ? JSON.parse(password.securityQuestions)
-          : [{ question: '', answer: '' }]
-    });
-  }
-}, [password]);
+  useEffect(() => {
+    if (password) {
+      setForm({
+        accountName: password.accountName || '',
+        email: password.email || '',
+        username: password.username || '',
+        password: '',
+        category: password.category || '',
+        url: password.url || '',
+        securityMethod: password.securityMethod || '',
+        securityValue: password.securityValue || '',
+        associatedPhone: password.associatedPhone || '',
+        recoveryEmail: password.recoveryEmail || '',
+        securityQuestions: Array.isArray(password.securityQuestions)
+          ? password.securityQuestions
+          : password.securityQuestions
+            ? JSON.parse(password.securityQuestions)
+            : [{ question: '', answer: '' }]
+      });
+    }
+  }, [password]);
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -91,61 +94,23 @@ function PasswordForm({ password, onSave, onCancel }) {
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2 }}>
-      <TextField
-        label="Account Name"
-        value={form.accountName}
-        onChange={(e) => handleChange('accountName', e.target.value)}
-        fullWidth
-      />
-      <TextField
-        label="Email"
-        type="email"
-        value={form.email}
-        onChange={(e) => handleChange('email', e.target.value)}
-        fullWidth
-      />
-      <TextField
-        label="Username"
-        value={form.username}
-        onChange={(e) => handleChange('username', e.target.value)}
-        fullWidth
-      />
-      <TextField
-        label="Password"
-        type="password"
-        value={form.password}
-        onChange={(e) => handleChange('password', e.target.value)}
-        fullWidth
-        required={!password}
-      />
-      <FormControl fullWidth margin="normal">
-  <InputLabel>Category</InputLabel>
-  <Select
-    value={form.category || ''}
-    onChange={(e) => handleChange('category', e.target.value)}
-  >
-    {categories.map(cat => (
-      <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-    ))}
-  </Select>
-</FormControl>
+      <TextField label="Account Name" value={form.accountName} onChange={(e) => handleChange('accountName', e.target.value)} fullWidth />
+      <TextField label="Email" type="email" value={form.email} onChange={(e) => handleChange('email', e.target.value)} fullWidth />
+      <TextField label="Username" value={form.username} onChange={(e) => handleChange('username', e.target.value)} fullWidth />
+      <TextField label="Password" type="password" value={form.password} onChange={(e) => handleChange('password', e.target.value)} fullWidth required={!password} />
+      
+      <FormControl fullWidth>
+        <InputLabel>Category</InputLabel>
+        <Select value={form.category || ''} onChange={(e) => handleChange('category', e.target.value)}>
+          {categories.map(cat => (
+            <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-<TextField
-  label="Website URL"
-  fullWidth
-  margin="normal"
-  value={form.url || ''}
-  onChange={(e) => handleChange('url', e.target.value)}
-  placeholder="https://gmail.com"
-/>
+      <TextField label="Website URL" fullWidth value={form.url || ''} onChange={(e) => handleChange('url', e.target.value)} placeholder="https://gmail.com" />
 
-      <TextField
-        select
-        label="Security Method"
-        value={form.securityMethod}
-        onChange={(e) => handleChange('securityMethod', e.target.value)}
-        fullWidth
-      >
+      <TextField select label="Security Method" value={form.securityMethod} onChange={(e) => handleChange('securityMethod', e.target.value)} fullWidth>
         {securityOptions.map(opt => (
           <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
         ))}
@@ -160,38 +125,15 @@ function PasswordForm({ password, onSave, onCancel }) {
         />
       )}
 
-      <TextField
-        label="Associated Phone"
-        value={form.associatedPhone}
-        onChange={(e) => handleChange('associatedPhone', e.target.value)}
-        fullWidth
-      />
-      <TextField
-        label="Recovery Email"
-        type="email"
-        value={form.recoveryEmail}
-        onChange={(e) => handleChange('recoveryEmail', e.target.value)}
-        fullWidth
-      />
+      <TextField label="Associated Phone" value={form.associatedPhone} onChange={(e) => handleChange('associatedPhone', e.target.value)} fullWidth />
+      <TextField label="Recovery Email" type="email" value={form.recoveryEmail} onChange={(e) => handleChange('recoveryEmail', e.target.value)} fullWidth />
 
       <Box>
         <Typography variant="subtitle2" sx={{ mb: 1 }}>Security Questions</Typography>
         {form.securityQuestions.map((q, i) => (
           <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'flex-start' }}>
-            <TextField
-              label="Question"
-              value={q.question}
-              onChange={(e) => handleQuestionChange(i, 'question', e.target.value)}
-              size="small"
-              sx={{ flex: 1 }}
-            />
-            <TextField
-              label="Answer"
-              value={q.answer}
-              onChange={(e) => handleQuestionChange(i, 'answer', e.target.value)}
-              size="small"
-              sx={{ flex: 1 }}
-            />
+            <TextField label="Question" value={q.question} onChange={(e) => handleQuestionChange(i, 'question', e.target.value)} size="small" sx={{ flex: 1 }} />
+            <TextField label="Answer" value={q.answer} onChange={(e) => handleQuestionChange(i, 'answer', e.target.value)} size="small" sx={{ flex: 1 }} />
             {form.securityQuestions.length > 1 && (
               <IconButton size="small" onClick={() => removeQuestion(i)}><Remove /></IconButton>
             )}

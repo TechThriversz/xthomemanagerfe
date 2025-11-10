@@ -1,51 +1,66 @@
 // src/pages/UpgradePage.jsx
 import { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Alert, CircularProgress, Card, CardContent } from '@mui/material';
-import { Upgrade, Send, CheckCircle, Edit } from '@mui/icons-material';
+import { Box, Typography, TextField, Button, Alert, CircularProgress, Card, CardContent, Link } from '@mui/material';
+import { Upgrade, Send, CheckCircle, Edit, Settings } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { requestProUpgrade } from '../services/api';
+import { getCurrentUser, requestProUpgrade } from '../services/api';
+import { handleApiError } from '../utils/apiErrorHandler';
 
-function UpgradePage({ user }) {
+function UpgradePage({ user: initialUser, setUser }) {
+  const [user, setLocalUser] = useState(initialUser);
   const [form, setForm] = useState({
-    phoneNumber: user?.phoneNumber || '',
-    fullName: user?.fullName || '',
-    email: user?.email || ''
+    phoneNumber: initialUser?.phoneNumber || '',
+    fullName: initialUser?.fullName || '',
+    email: initialUser?.email || ''
   });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [requestStatus, setRequestStatus] = useState('');
+  const [hasFetched, setHasFetched] = useState(false); // Prevent double
 
   useEffect(() => {
-    const pending = user?.proUpgradeRequests?.some(r => r.status === 'Pending');
-    const approved = user?.isPro;
-    setRequestStatus(pending ? 'pending' : approved ? 'approved' : 'none');
-  }, [user]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.fullName || !form.phoneNumber) {
-      toast.error('Full Name and Phone Number are required');
-      return;
+    if (!hasFetched) {
+      fetchUserStatus();
+      setHasFetched(true);
     }
-    setLoading(true);
+  }, [hasFetched]);
+
+  const fetchUserStatus = async () => {
     try {
-      await requestProUpgrade();
-      setRequestStatus('pending');
-      toast.success('Request sent! Admin will review.');
+      const res = await getCurrentUser();
+      const updatedUser = res.data;
+      setLocalUser(updatedUser);
+      setUser(updatedUser);
+      setForm({
+        phoneNumber: updatedUser.phoneNumber || '',
+        fullName: updatedUser.fullName || '',
+        email: updatedUser.email || ''
+      });
+
+      const pending = updatedUser.proUpgradeRequests?.some(r => r.status === 'Pending');
+      setRequestStatus(pending ? 'pending' : updatedUser.isPro ? 'approved' : 'none');
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data || 'Failed to send request';
-      if (msg.includes('pending')) {
-        toast.warn('Request already pending');
-        setRequestStatus('pending');
-      } else {
-        toast.error(msg);
-      }
-    } finally {
-      setLoading(false);
+      handleApiError(err, toast);
     }
   };
 
-  const daysLeft = user?.proEndDate ? Math.ceil((new Date(user.proEndDate) - new Date()) / (86400000)) : 0;
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    await requestProUpgrade();
+    await refreshUser(); 
+    toast.success('Request sent! Admin will review.');
+  } catch (err) {
+    handleApiError(err, toast);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const daysLeft = user?.proEndDate 
+    ? Math.ceil((new Date(user.proEndDate) - new Date()) / 86400000) 
+    : 0;
 
   return (
     <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
@@ -58,7 +73,6 @@ function UpgradePage({ user }) {
         </Typography>
       </Box>
 
-      {/* APPROVED */}
       {requestStatus === 'approved' && (
         <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)', textAlign: 'center' }}>
           <CardContent sx={{ p: 5 }}>
@@ -74,16 +88,14 @@ function UpgradePage({ user }) {
         </Card>
       )}
 
-      {/* PENDING */}
       {requestStatus === 'pending' && (
         <Card sx={{ borderRadius: 3, p: 5, textAlign: 'center' }}>
-          <Alert severity="info" sx={{ mb: 3 }}>
+          <Alert severity="info" sx={{ mb: 3, border: '1px solid #1A2A44' }}>
             <strong>Request Pending</strong> — Admin will upgrade you soon.
           </Alert>
         </Card>
       )}
 
-      {/* FORM ONLY IF NONE */}
       {requestStatus === 'none' && (
         <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
           <CardContent sx={{ p: 5 }}>
@@ -104,6 +116,8 @@ function UpgradePage({ user }) {
                 disabled={!isEditing}
                 required
                 fullWidth
+                error={!form.phoneNumber && isEditing}
+                helperText={!form.phoneNumber && isEditing && "Required"}
               />
               <TextField
                 label="Full Name"
@@ -112,6 +126,8 @@ function UpgradePage({ user }) {
                 disabled={!isEditing}
                 required
                 fullWidth
+                error={!form.fullName && isEditing}
+                helperText={!form.fullName && isEditing && "Required"}
               />
               <TextField label="Email" value={form.email} disabled fullWidth />
               <TextField label="Request Date" value={new Date().toLocaleDateString('en-GB')} disabled fullWidth />
@@ -121,19 +137,29 @@ function UpgradePage({ user }) {
                 variant="contained"
                 size="large"
                 startIcon={loading ? <CircularProgress size={20} /> : <Send />}
-                disabled={loading}
+                disabled={loading || !form.fullName || !form.phoneNumber}
                 sx={{ bgcolor: '#1A2A44', borderRadius: 50, py: 1.5, fontWeight: 'bold' }}
               >
                 {loading ? 'Sending...' : 'Send Request'}
               </Button>
             </Box>
+
+            {(!form.fullName || !form.phoneNumber) && !isEditing && (
+              <Alert severity="warning" sx={{ mt: 3 }}>
+                Please update your{' '}
+                <Link href="/settings" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
+                  Full Name and Phone Number in Settings
+                </Link>{' '}
+                to request PRO access.
+              </Alert>
+            )}
           </CardContent>
         </Card>
       )}
 
       <Box sx={{ mt: 6, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
-          Need help? Contact support at 
+          Need help? Contact support at{' '}
           <a href="mailto:support@xthomemanager.com" style={{ color: '#1A2A44', fontWeight: 'bold', textDecoration: 'underline' }}>
             support@xthomemanager.com
           </a>
