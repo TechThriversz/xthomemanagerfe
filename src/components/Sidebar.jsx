@@ -159,7 +159,7 @@ const canUse = {
       </List>
 
       {user && (
-        <Box sx={{ p: 2, borderTop: '1px solid #E0E0E0', bgcolor: '#FAFAFA' }}>
+        <Box sx={{ p: 1.6, borderTop: '1px solid #E0E0E0', bgcolor: '#FAFAFA' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <img 
               src={imageUrl} 
@@ -168,11 +168,14 @@ const canUse = {
             />
             <Box sx={{textAlign:'left'}}>
               <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#1A2A44' }}>
-                {user.fullName || user.email}
+                {user.fullName || "Not Provided"}
               </Typography>
-              <Typography variant="caption" sx={{  color: '#666', fontWeight: '500' }}>
+              <Typography variant="caption" sx={{ color: '#666', fontWeight: '500' }}>
+                {user.email || "No Email"}
+              </Typography>
+              {/* <Typography variant="caption" sx={{  color: '#666', fontWeight: '500' }}>
                 {user.role || 'User'}
-              </Typography>
+              </Typography> */}
             </Box>
           </Box>
         </Box>

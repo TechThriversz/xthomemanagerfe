@@ -11,12 +11,12 @@ import { CONFIG } from '../../config';
 function FamilyMemberForm({ member, onSave, onClose, members, user }) {
   const [form, setForm] = useState({
     name: member?.name || '',
-    birthday: member?.birthday || '',
+    birthday: member?.birthday?.split('T')[0] || '',
     relation: member?.relation || '',
     parentIds: member?.parentIds || [],
     spouseIds: member?.spouseIds || [],
     isDeceased: member?.isDeceased || false,
-    deathDate: member?.deathDate || '',
+    deathDate: member?.deathDate?.split('T')[0] || '',
     bornPlace: member?.bornPlace || '',
     diedPlace: member?.diedPlace || ''
   });
@@ -27,7 +27,13 @@ function FamilyMemberForm({ member, onSave, onClose, members, user }) {
     'Paternal Grandfather', 'Paternal Grandmother',
     'Maternal Grandfather', 'Maternal Grandmother',
     'Father', 'Mother',
-    'Son', 'Daughter', 'Brother', 'Sister'
+    'Brother', 'Sister',
+    'Wife', 'Husband',
+    "Brother's Wife", "Sister's Husband",
+    'Son', 'Daughter',
+    "Brother's Son", "Brother's Daughter",
+    "Sister's Son", "Sister's Daughter",
+    'You'
   ];
 
   const handleImageChange = (e) => {
@@ -45,8 +51,26 @@ function FamilyMemberForm({ member, onSave, onClose, members, user }) {
       toast.error('Name, Birthday, and Relation are required');
       return;
     }
-    onSave({ ...form, image: imageFile });
+    onSave({
+      ...form,
+      image: imageFile,
+      ParentIdsJson: JSON.stringify(form.parentIds),
+      SpouseIdsJson: JSON.stringify(form.spouseIds)
+    });
   };
+
+  // Hide parent selection for: You, Grandparents, Parents, Wives/Husbands, Nieces/Nephews
+  const showParents = ![
+    'You', 'Paternal Grandfather', 'Paternal Grandmother',
+    'Maternal Grandfather', 'Maternal Grandmother',
+    'Father', 'Mother',
+    "Brother's Wife", "Sister's Husband",
+    "Brother's Son", "Brother's Daughter",
+    "Sister's Son", "Sister's Daughter"
+  ].includes(form.relation);
+
+  // Show spouse selection for: You, Brother, Sister, Son, Daughter
+  const showSpouse = ['You', 'Brother', 'Sister', 'Son', 'Daughter'].includes(form.relation);
 
   return (
     <Box sx={{ p: 1 }}>
@@ -62,9 +86,9 @@ function FamilyMemberForm({ member, onSave, onClose, members, user }) {
         <Typography variant="body2" color="text.secondary">Click to upload photo</Typography>
       </Box>
 
-      <TextField label="Full Name" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} fullWidth sx={{ mb: 2 }} InputProps={{ startAdornment: <Person sx={{ color: 'text.secondary', mr: 1 }} /> }} />
-      <TextField label="Birthday" type="date" value={form.birthday} onChange={e => setForm(p => ({ ...p, birthday: e.target.value }))} fullWidth sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <Cake sx={{ color: 'text.secondary', mr: 1 }} /> }} />
-      
+      <TextField label="Full Name" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} fullWidth sx={{ mb: 2 }} />
+      <TextField label="Birthday" type="date" value={form.birthday} onChange={e => setForm(p => ({ ...p, birthday: e.target.value }))} fullWidth sx={{ mb: 2 }} InputLabelProps={{ shrink: true }} />
+
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>Relation to You</InputLabel>
         <Select value={form.relation} onChange={e => setForm(p => ({ ...p, relation: e.target.value }))}>
@@ -72,11 +96,26 @@ function FamilyMemberForm({ member, onSave, onClose, members, user }) {
         </Select>
       </FormControl>
 
-      {members.length > 0 && (
+      {/* PARENTS — MULTIPLE */}
+      {showParents && members.length > 0 && (
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Parents</InputLabel>
           <Select multiple value={form.parentIds} onChange={e => setForm(p => ({ ...p, parentIds: e.target.value }))}>
-            {members.map(m => <MenuItem key={m.id} value={m.id}>{m.name}</MenuItem>)}
+            {members.filter(m => m.relation !== 'You').map(m => (
+              <MenuItem key={m.id} value={m.id}>{m.name} ({m.relation})</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+
+      {/* SPOUSE — MULTIPLE */}
+      {showSpouse && members.length > 0 && (
+        <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel>Spouse(s)</InputLabel>
+          <Select multiple value={form.spouseIds} onChange={e => setForm(p => ({ ...p, spouseIds: e.target.value }))}>
+            {members.filter(m => ['Wife', 'Husband', "Brother's Wife", "Sister's Husband"].includes(m.relation)).map(m => (
+              <MenuItem key={m.id} value={m.id}>{m.name} ({m.relation})</MenuItem>
+            ))}
           </Select>
         </FormControl>
       )}

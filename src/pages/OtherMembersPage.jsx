@@ -4,23 +4,55 @@ import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Avatar, Switch, FormControlLabel, CircularProgress
 } from '@mui/material';
-import { Edit, Delete, Add, PhotoCamera, PictureAsPdf, People, AddCircle } from '@mui/icons-material';
+import { Edit, Delete, Add, PhotoCamera, PictureAsPdf, TableChart, People, AddCircle } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { getOtherMembers, addOtherMember, updateOtherMember, deleteOtherMember } from '../services/api';
 import { CONFIG } from '../../config';
 
-const { jsPDF } = window.jspdf;
+
+
+
+const jsPDF = window.jspdf?.jsPDF;
 
 const calculateAge = (birth, death = null) => {
-  const end = death ? new Date(death) : new Date();
-  const start = new Date(birth);
+  if (!birth) return "-";
+
+  const birthDate = new Date(birth);
+  const today = new Date();
+
+  if (!death) {
+    return getDuration(birthDate, today);
+  }
+
+  const deathDate = new Date(death);
+  const ageAtDeath = getDuration(birthDate, deathDate);
+  const timeSinceDeath = getDuration(deathDate, today);
+
+  return { ageAtDeath, timeSinceDeath };
+};
+
+
+// Helper function to calculate duration between two dates
+function getDuration(start, end) {
   let years = end.getFullYear() - start.getFullYear();
   let months = end.getMonth() - start.getMonth();
   let days = end.getDate() - start.getDate();
-  if (days < 0) { months--; days += new Date(end.getFullYear(), end.getMonth(), 0).getDate(); }
-  if (months < 0) { years--; months += 12; }
+
+  if (days < 0) {
+    months--;
+    const prevMonthDays = new Date(end.getFullYear(), end.getMonth(), 0).getDate();
+    days += prevMonthDays;
+  }
+
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
   return `${years}y ${months}m ${days}d`;
-};
+}
+
+
 
 function OtherMembersPage() {
   const [members, setMembers] = useState([]);
@@ -138,15 +170,17 @@ function OtherMembersPage() {
     }
   };
 
+  // PDF EXPORT
   const exportPDF = () => {
-    if (!jsPDF || !jsPDF.prototype.autoTable) {
-      toast.error('PDF library not loaded');
-      return;
-    }
     if (members.length === 0) {
       toast.warn('No members to export');
       return;
     }
+
+    if (typeof jsPDF !== "function" || !window.jspdf?.jsPDF?.API?.autoTable) {
+  toast.error("PDF library failed to load. Please refresh the page.");
+  return;
+}
 
     const doc = new jsPDF();
     doc.setFontSize(16);
@@ -160,7 +194,7 @@ function OtherMembersPage() {
       new Date(m.birthday).toLocaleDateString('en-GB'),
       calculateAge(m.birthday),
       m.isDeceased ? new Date(m.deathDate).toLocaleDateString('en-GB') : '-',
-      m.isDeceased ? calculateAge(m.birthday, m.deathDate) : '-',
+      m.isDeceased ? calculateAge(m.birthday, m.deathDate).timeSinceDeath : '-',
       m.bornPlace || '-',
       m.diedPlace || '-'
     ]);
@@ -176,6 +210,40 @@ function OtherMembersPage() {
     });
 
     doc.save('other-family-members.pdf');
+  };
+
+  // EXCEL EXPORT (CSV)
+  const exportExcel = () => {
+    if (members.length === 0) {
+      toast.warn('No members to export');
+      return;
+    }
+
+    const headers = ['Name', 'Relation', 'Birthday', 'Age', 'Death Date', 'Death Age', 'Born', 'Died'];
+    const csvRows = [
+      headers.join(','),
+      ...members.map(m => [
+        `"${m.name}"`,
+        `"${m.relation}"`,
+        `"${new Date(m.birthday).toLocaleDateString('en-GB')}"`,
+        `"${calculateAge(m.birthday)}"`,
+        m.isDeceased ? `"${new Date(m.deathDate).toLocaleDateString('en-GB')}"` : '""',
+        m.isDeceased ? `"${calculateAge(m.birthday, m.deathDate)}"` : '""',
+        `"${m.bornPlace || ''}"`,
+        `"${m.diedPlace || ''}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvRows], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'other-family-members.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Excel file downloaded');
   };
 
   // LOADING
@@ -232,7 +300,6 @@ function OtherMembersPage() {
           </Button>
         </Box>
 
-        {/* DIALOGS IN EMPTY STATE */}
         <MemberFormDialog
           open={open}
           onClose={handleCloseForm}
@@ -262,6 +329,9 @@ function OtherMembersPage() {
           <Button variant="outlined" startIcon={<PictureAsPdf />} onClick={exportPDF} sx={{ borderRadius: 50 }}>
             Export PDF
           </Button>
+          <Button variant="outlined" startIcon={<TableChart />} onClick={exportExcel} sx={{ borderRadius: 50 }}>
+            Export Excel
+          </Button>
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -284,8 +354,8 @@ function OtherMembersPage() {
               <TableCell><strong>Age</strong></TableCell>
               <TableCell><strong>Death Date</strong></TableCell>
               <TableCell><strong>Death Age</strong></TableCell>
-              <TableCell><strong>Born</strong></TableCell>
-              <TableCell><strong>Died</strong></TableCell>
+              <TableCell><strong>Born Place</strong></TableCell>
+              <TableCell><strong>Died Place</strong></TableCell>
               <TableCell><strong>Actions</strong></TableCell>
             </TableRow>
           </TableHead>
@@ -302,10 +372,18 @@ function OtherMembersPage() {
                 </TableCell>
                 <TableCell>{m.name}</TableCell>
                 <TableCell>{m.relation}</TableCell>
-                <TableCell>{new Date(m.birthday).toLocaleDateString('en-GB')}</TableCell>
-                <TableCell>{calculateAge(m.birthday)}</TableCell>
-                <TableCell>{m.isDeceased ? new Date(m.deathDate).toLocaleDateString('en-GB') : '-'}</TableCell>
-                <TableCell>{m.isDeceased ? calculateAge(m.birthday, m.deathDate) : '-'}</TableCell>
+                <TableCell>{new Date(m.birthday).toLocaleDateString('en-US')}</TableCell>
+                <TableCell sx={{ color: 'green', fontWeight: 'bold' }}>
+  {!m.isDeceased
+    ? calculateAge(m.birthday)
+    : calculateAge(m.birthday, m.deathDate).ageAtDeath}
+</TableCell>
+                <TableCell>{m.isDeceased ? new Date(m.deathDate).toLocaleDateString('en-US') : '-'}</TableCell>
+               <TableCell sx={{ color: 'red', fontWeight: 'bold' }}>
+  {m.isDeceased
+    ? calculateAge(m.birthday, m.deathDate).timeSinceDeath
+    : '-'}
+</TableCell>
                 <TableCell>{m.bornPlace || '-'}</TableCell>
                 <TableCell>{m.diedPlace || '-'}</TableCell>
                 <TableCell>
@@ -322,7 +400,6 @@ function OtherMembersPage() {
         </Table>
       </TableContainer>
 
-      {/* DIALOGS IN MAIN STATE */}
       <MemberFormDialog
         open={open}
         onClose={handleCloseForm}
@@ -343,7 +420,7 @@ function OtherMembersPage() {
   );
 }
 
-// Extracted Dialogs
+// DIALOGS
 function MemberFormDialog({ open, onClose, editing, form, setForm, handleImageChange, imagePreview, onSave }) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
