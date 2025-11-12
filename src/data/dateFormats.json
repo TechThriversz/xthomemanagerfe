@@ -1,0 +1,12 @@
+[
+  { "value": "dd/MM/yyyy", "label": "DD/MM/YYYY (15/03/2025)" },
+  { "value": "MM/dd/yyyy", "label": "MM/DD/YYYY (03/15/2025)" },
+  { "value": "yyyy-MM-dd", "label": "YYYY-MM-DD (2025-03-15)" },
+  { "value": "dd-MM-yyyy", "label": "DD-MM-YYYY (15-03-2025)" },
+  { "value": "MM-dd-yyyy", "label": "MM-DD-YYYY (03-15-2025)" },
+  { "value": "dd.MM.yyyy", "label": "DD.MM.YYYY (15.03.2025)" },
+  { "value": "MMMM d, yyyy", "label": "March 15, 2025" },
+  { "value": "d MMMM yyyy", "label": "15 March 2025" },
+  { "value": "EEE, MMM d", "label": "Sat, Mar 15" },
+  { "value": "yyyy/MM/dd", "label": "2025/03/15" }
+]

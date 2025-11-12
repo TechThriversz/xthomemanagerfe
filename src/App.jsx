@@ -28,6 +28,7 @@ import MedicalRecordsPage from './pages/MedicalRecordsPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import PasswordVaultPage from './pages/PasswordVaultPage';
 import UpgradePage from './pages/UpgradePage';
+import AdminRequestsPage from './pages/AdminRequestsPage';
 
 function App() {
   const navigate = useNavigate();
@@ -111,6 +112,7 @@ function App() {
                 <Route path="/other-members" element={<OtherMembersPage />} />
                 <Route path="medical-records" element={<MedicalRecordsPage user={user} refreshUser={refreshUser} />} />
                 <Route path="admin/users" element={<AdminUsersPage user={user} refreshUser={refreshUser} />} />
+                <Route path="admin/requests" element={<AdminRequestsPage user={user} refreshUser={refreshUser} showDeletionRequests />} />
                 <Route path="password-vault" element={<PasswordVaultPage user={user} refreshUser={refreshUser} />} />
                 <Route path="upgrade" element={<UpgradePage user={user} setUser={setUser} refreshUser={refreshUser} />} />
                 <Route path="*" element={<Navigate to="/dashboard" />} />

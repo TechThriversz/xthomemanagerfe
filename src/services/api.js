@@ -99,6 +99,32 @@ export const toggleUserStatus = (userId) => api.patch(`/admin/users/${userId}/to
 export const updateUserPermissions = (userId, permissions) => {
   return api.patch(`/admin/users/${userId}/permissions`, permissions);
 };
+// src/services/api.js
+
+// src/services/api.js
+
+export const requestAccountDeletion = () => {
+  return api.post('/admin/deletion/request');
+};
+
+export const getDeletionRequests = () => {
+  return api.get('/admin/deletion/requests'); // ← Add this endpoint in backend
+};
+
+export const approveDeletion = (requestId) => {
+  return api.post(`/admin/deletion/approve/${requestId}`);
+};
+
+export const getNotifications = () => {
+  return api.get('/admin/notifications');
+};
+
+export const getDeletionCountdown = () => {
+  return api.get('/user/deletion-countdown');
+}
+export const cancelDeletion = () => {
+  return api.post('/admin/deletion/cancel');
+};
 
 export const requestProUpgrade = () => api.post('/admin/upgrade/request');
 export const approveProUpgrade = (userId) => api.post(`/admin/upgrade/approve/${userId}`);

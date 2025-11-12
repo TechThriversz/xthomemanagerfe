@@ -1,14 +1,17 @@
 import { Box, AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
 import { Settings, AccountCircle, Logout } from '@mui/icons-material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { NotificationsNoneOutlined, EmailOutlined } from '@mui/icons-material';
+import { NotificationsNoneOutlined, EmailOutlined, Badge } from '@mui/icons-material';
 import { CONFIG } from '../../config';
 import assets from '../asset';
+import { getNotifications, getDeletionCountdown } from '../services/api';
 
 function TopBar({ user, onLogout }) {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [notifications, setNotifications] = useState(0);
+  const [deletionCountdown, setDeletionCountdown] = useState(null);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -28,6 +31,27 @@ function TopBar({ user, onLogout }) {
     handleMenuClose();
   };
 
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      if (user?.role === 'Admin') {
+        const res = await getNotifications();
+        setNotifications(res.data.filter(n => !n.seen).length);
+      }
+      if (user?.deletionScheduledAt) {
+        setDeletionCountdown(new Date(user.deletionScheduledAt));
+      }
+    };
+    fetchNotifs();
+    const interval = setInterval(fetchNotifs, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const timeLeft = deletionCountdown
+    ? Math.max(0, Math.floor((deletionCountdown - new Date()) / 1000))
+    : 0;
+  const hours = Math.floor(timeLeft / 3600);
+  const minutes = Math.floor((timeLeft % 3600) / 60);
+
   const { R2_BASE_URL, DUMMY_IMAGE_URL } = CONFIG;
   const imageUrl = user?.imagePath ? `${R2_BASE_URL}/${user.imagePath.replace(/\\/g, '/')}` : DUMMY_IMAGE_URL;
 
@@ -44,7 +68,22 @@ function TopBar({ user, onLogout }) {
 
         {user && (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton color="inherit" sx={{ color: '#888' }}><NotificationsNoneOutlined /></IconButton>
+          {deletionCountdown && (
+              <Box sx={{
+                bgcolor: '#FFEBEE', color: '#D32F2F', px: 2, py: 1, borderRadius: 50,
+                fontSize: '0.8rem', fontWeight: 'bold', animation: 'pulse 2s infinite'
+              }}>
+                Deletion in {hours}h {minutes}m
+              </Box>
+            )}
+
+            {user.role === 'Admin' && (
+              <IconButton onClick={() => navigate('/admin/notifications')} color="inherit">
+                <Badge badgeContent={notifications} color="error">
+                  <NotificationsNoneOutlined />
+                </Badge>
+              </IconButton>
+            )}
             <IconButton color="inherit" sx={{ color: '#888', mr: 2 }}><EmailOutlined /></IconButton>
             <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={handleMenuOpen}>
               <img

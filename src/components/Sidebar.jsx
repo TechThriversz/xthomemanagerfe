@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { 
   Dashboard, ListAlt, LocalDining, LocalAtm, Home, Settings, People, 
-  FolderShared, MedicalInformation, FamilyRestroom, Lock,  ExpandLess, ExpandMore, LockOutlined,HealthAndSafetyOutlined, GroupOutlined, Group
+  FolderShared, MedicalInformation, FamilyRestroom, Lock,  ExpandLess, ExpandMore, LockOutlined,HealthAndSafetyOutlined, GroupOutlined, Group, DeleteForever
 } from '@mui/icons-material';
 import { CONFIG } from '../../config';
 
@@ -149,7 +149,14 @@ const canUse = {
             </ListItemButton>
           </ListItem>
         )}
-
+{isAdmin && (
+  <ListItem disablePadding>
+    <ListItemButton component={NavLink} to="/admin/requests">
+    <ListItemIcon><DeleteForever sx={{ color: '#D32F2F' }} /></ListItemIcon>
+    <ListItemText primary="Deletion Requests" />
+    </ListItemButton>
+  </ListItem>
+)}
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/settings">
             <ListItemIcon><Settings sx={{ color: '#78909C' }}/></ListItemIcon>
