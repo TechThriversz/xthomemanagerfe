@@ -108,20 +108,21 @@ export const requestAccountDeletion = () => {
 };
 
 export const getDeletionRequests = () => {
-  return api.get('/admin/deletion/requests'); // ← Add this endpoint in backend
+  return api.get('/admin/deletion/requests'); 
 };
 
 export const approveDeletion = (requestId) => {
   return api.post(`/admin/deletion/approve/${requestId}`);
 };
 
+export const approveCancellation = (requestId) => {
+  return api.post(`/admin/cancellation/approve/${requestId}`);
+};
+
 export const getNotifications = () => {
   return api.get('/admin/notifications');
 };
 
-export const getDeletionCountdown = () => {
-  return api.get('/user/deletion-countdown');
-}
 export const cancelDeletion = () => {
   return api.post('/admin/deletion/cancel');
 };

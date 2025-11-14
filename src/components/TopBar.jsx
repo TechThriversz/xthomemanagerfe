@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { NotificationsNoneOutlined, EmailOutlined, Badge } from '@mui/icons-material';
 import { CONFIG } from '../../config';
 import assets from '../asset';
-import { getNotifications, getDeletionCountdown } from '../services/api';
+import { getNotifications } from '../services/api';
 
 function TopBar({ user, onLogout }) {
   const navigate = useNavigate();
@@ -73,7 +73,7 @@ function TopBar({ user, onLogout }) {
                 bgcolor: '#FFEBEE', color: '#D32F2F', px: 2, py: 1, borderRadius: 50,
                 fontSize: '0.8rem', fontWeight: 'bold', animation: 'pulse 2s infinite'
               }}>
-                Deletion in {hours}h {minutes}m
+                Your Account is about to delete in <strong>{hours}h {minutes}m</strong>
               </Box>
             )}
 

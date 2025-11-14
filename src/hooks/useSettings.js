@@ -30,7 +30,6 @@ export function useSettings() {
   useEffect(() => {
     getSettings()
       .then(res => {
-        console.log('API SETTINGS:', res.data);
         const data = res.data;
         const merged = {
           currency: data.currency || 'PKR',

@@ -10,7 +10,7 @@ function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+ const adminEmail = "techthrivers@gmail.com";
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -29,10 +29,17 @@ function Login({ onLogin }) {
       onLogin(user, token);
     } catch (err) {
       const msg = err.response?.data || err.message;
-      setError(msg.includes("deactivated") 
-        ? "Your account has been deactivated. Please contact Administration at techthrivers@gmail.com"
-        : "Invalid email or password"
-      );
+    setError(
+  msg.includes("deactivated")
+    ? `Your account has been deactivated. Please contact Administration at ${adminEmail}`
+    : msg.includes("locked")
+      ? "This account has been temporarily locked due to too many failed attempts."
+      : msg.includes("expired")
+        ? "Your session has expired. Please log in again."
+        : msg.includes("not found") 
+          ? `The email or password you entered is incorrect. If you believe this is a mistake or you\'re having trouble logging in, please contact Administration at ${adminEmail}`
+          : "Invalid email or password"
+);
     } finally {
       setLoading(false);
     }
@@ -61,7 +68,13 @@ function Login({ onLogin }) {
                 Your account has been deactivated. Please contact Administration at{' '}
                 <a href="mailto:techthrivers@gmail.com">SUPPORT</a>
               </>
-            ) : error}
+            ) 
+            : error.includes("not found") ? (
+              <>
+              The email or password you entered is incorrect. If you believe this is a mistake or you\'re having trouble logging in, please contact Administration at{' '}
+              <a href="mailto:techthrivers@gmail.com">SUPPORT</a>
+              </>
+            ): error}
           </Alert>
         )}
 

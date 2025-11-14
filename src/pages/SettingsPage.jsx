@@ -1,5 +1,5 @@
 // src/pages/SettingsPage.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Button, TextField, Select, MenuItem, FormControl, InputLabel,
   CircularProgress, Avatar, IconButton, Grid, Dialog, DialogTitle, DialogContent,
@@ -7,7 +7,8 @@ import {
 } from '@mui/material';
 import { PhotoCamera, WarningAmber } from '@mui/icons-material';
 import { useSettings } from '../hooks/useSettings';
-import { updateUser, requestAccountDeletion } from '../services/api';
+import { useUser } from '../hooks/useUser';
+import { updateUser, requestAccountDeletion, cancelDeletion } from '../services/api';
 import { toast } from 'react-toastify';
 import { CONFIG } from '../../config';
 
@@ -17,15 +18,57 @@ import dateFormats from '../data/dateFormats.json';
 
 function SettingsPage({ user, setUser }) {
   const { settings: apiSettings, update: saveSettingsToApi, loading: settingsLoading } = useSettings();
-
+  const { refreshUser } = useUser();
   const [localSettings, setLocalSettings] = useState({});
   const [profile, setProfile] = useState({ fullName: '', phoneNumber: '', gender: '', dateOfBirth: '', password: '', image: null });
   const [imagePreview, setImagePreview] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [deletionModalOpen, setDeletionModalOpen] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [deletionSubmitted, setDeletionSubmitted] = useState(false);
   const [submittingDeletion, setSubmittingDeletion] = useState(false);
+  const [submittingCancel, setSubmittingCancel] = useState(false);
+   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0 });
+
+  const calculateTimeLeft = useCallback((scheduledTimeStr) => {
+    if (!scheduledTimeStr) {
+      setTimeLeft({ hours: 0, minutes: 0 });
+      return;
+    }
+
+    const scheduledTime = new Date(scheduledTimeStr).getTime();
+    const now = new Date().getTime();
+    const msDifference = scheduledTime - now;
+
+    if (msDifference <= 0) {
+ 
+      setTimeLeft({ hours: 0, minutes: 0 });
+      return;
+    }
+
+    // 1. Convert milliseconds to total seconds
+    let totalSeconds = Math.floor(msDifference / 1000);
+
+    // 2. Calculate hours
+    const hoursLeft = Math.floor(totalSeconds / 3600);
+    totalSeconds %= 3600; // Remaining seconds after extracting hours
+
+    // 3. Calculate minutes (Math.ceil ensures partial minutes show up as 1 minute)
+    let minutesLeft = Math.ceil(totalSeconds / 60);
+
+    let finalHours = hoursLeft;
+    let finalMinutes = minutesLeft;
+
+    // 4. Handle roll-over: if minutes is 60, it means an hour has passed
+    if (finalMinutes === 60) {
+  
+      finalHours += 1;
+      finalMinutes = 0;
+    }
+
+    setTimeLeft({ hours: finalHours, minutes: finalMinutes });
+  }, []);
 
   // Sync API → localSettings
   useEffect(() => {
@@ -52,10 +95,11 @@ function SettingsPage({ user, setUser }) {
       setImagePreview(user.imagePath ? `${CONFIG.R2_BASE_URL}/${user.imagePath}` : CONFIG.DUMMY_IMAGE_URL);
 
       // Check if deletion already requested
-      if (user.deletionRequestStatus === 'Pending') {
+      if (user.deletionRequestStatus === 'Pending' || user.deleteRequestPendingOrApproved === "Pending" || user.deleteRequestPendingOrApproved === "Approved") {
         setDeletionSubmitted(true);
       }
     }
+  
   }, [apiSettings, user]);
 
   const handleSaveSettings = async () => {
@@ -69,6 +113,25 @@ function SettingsPage({ user, setUser }) {
       setSavingSettings(false);
     }
   };
+
+    useEffect(() => {
+    let intervalId;
+    const scheduledTimeStr = user?.deletionScheduledAt;
+ 
+
+    if (scheduledTimeStr) {
+     
+        calculateTimeLeft(scheduledTimeStr);
+        intervalId = setInterval(() => {
+            calculateTimeLeft(scheduledTimeStr);
+        }, 60000); 
+        return () => clearInterval(intervalId);
+    } else {
+        setTimeLeft({ hours: 0, minutes: 0 });
+    }
+    
+    // Recalculate if the scheduled time changes
+  }, [user?.deletionScheduleAt, calculateTimeLeft]); 
 
   const handleProfileSave = async () => {
     setSavingProfile(true);
@@ -98,22 +161,50 @@ function SettingsPage({ user, setUser }) {
       await requestAccountDeletion();
       setDeletionSubmitted(true);
       setDeletionModalOpen(false);
+      var refreshedUser = await refreshUser(); 
+      console.log("Refreshed user after deletion request:", refreshedUser);
       toast.success('Deletion request sent to admin.');
     } catch (err) {
-      toast.error(err.response?.data || 'Failed to send request');
+   
+      const errorMessage = err.response?.data?.message || 'Failed to send request';
+      toast.error(errorMessage);
     } finally {
       setSubmittingDeletion(false);
     }
   };
 
+
+const handleCancleDeletion = async () => {
+    setSubmittingCancel(true);
+    try {
+        await cancelDeletion(); 
+        setDeletionSubmitted(false);
+        setCancelModalOpen(false);
+        toast.success('Cancellation request submitted!');
+        
+    } catch (err) {
+     
+        let errorMessage = 'Failed to send request.'; 
+        if (err.response && err.response.data) {
+            errorMessage = err.response.data.message || err.response.data;
+        } 
+        console.error("Error cancelling deletion:", err); 
+        toast.error(errorMessage);
+        
+    } finally {
+        setSubmittingCancel(false);
+    }
+};
+
   const daysLeft = user?.proEndDate
     ? Math.ceil((new Date(user.proEndDate) - new Date()) / 86400000)
     : 0;
 
+
   if (settingsLoading) {
     return <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 10 }} />;
   }
-
+const isDeletionPending = deletionSubmitted && (timeLeft.hours > 0 || timeLeft.minutes > 0);
   return (
     <Box sx={{ p: 3, maxWidth: 900, mx: 'auto' }}>
       <Typography variant="h4" gutterBottom align="center" sx={{ color: '#1A2A44', fontWeight: 'bold' }}>
@@ -319,9 +410,60 @@ function SettingsPage({ user, setUser }) {
           </Typography>
 
           {deletionSubmitted ? (
+            <>
+            {user.deletionRequestStatus === 'Pending' ? (
             <Alert severity="info" sx={{ borderRadius: 2 }}>
               <strong>Request Submitted</strong> — Your account deletion request has been sent to the admin. You will be notified once approved.
             </Alert>
+           ) : user.deleteRequestPendingOrApproved === 'Pending' ? (
+               <>
+            <Alert severity="warning" sx={{ borderRadius: 2 }}>
+              <strong>Request Submitted</strong> — Your account deletion request has been sent to the admin and pending to approve. 
+              You can cancel the request before admin approval.
+            </Alert>
+            <Button
+              variant="outlined"
+              color="warning"
+              onClick={() => setCancelModalOpen(true)}
+              sx={{ borderRadius: 50, px: 4, mt:2 }}
+            >
+             Cancel Deletion
+            </Button>
+            
+            </>
+
+           ) : user.deleteRequestPendingOrApproved === 'Approved' ? (
+         <>
+          <Alert severity="error" sx={{ borderRadius: 2 }}>
+            <strong>Deletion Approved</strong> — Your account deletion request has been approved by the admin and you have 
+            {isDeletionPending && (
+              <strong style={{ marginLeft: '8px' }}>
+                {String(timeLeft.hours).padStart(2, '0')} hours and {String(timeLeft.minutes).padStart(2, '0')} minutes &nbsp; 
+              </strong>
+            )} 
+             time to cancel. If you change your mind, please contact the admin immediately to cancel the deletion.
+          </Alert>
+          <Button
+            variant="outlined"
+            color="warning"
+            onClick={() => setCancelModalOpen(true)}
+            sx={{ borderRadius: 50, px: 4, mt: 2 }}
+          >
+            Cancel Deletion
+          </Button>
+          
+        </>
+          
+           ) : (
+            <Alert severity="info" sx={{ borderRadius: 2 }}>
+              <strong>Request Submitted</strong> — Your account deletion request has been sent to the admin. You will be notified once approved.
+            </Alert>
+           )
+          
+           }
+            </>
+        
+        
           ) : (
             <Button
               variant="outlined"
@@ -379,6 +521,45 @@ function SettingsPage({ user, setUser }) {
             sx={{ borderRadius: 50, px: 4 }}
           >
             {submittingDeletion ? 'Submitting...' : 'Yes, Delete My Account'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* CANCEL DELETION CONFIRMATION MODAL */}
+       <Dialog
+        open={cancelModalOpen}
+        onClose={() => !submittingCancel && setCancelModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: '#ad9d05ff', color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
+          <WarningAmber sx={{ fontSize: 40, mb: 1, display: 'block', mx: 'auto' }} />
+          Confirm Account Deletion Cancellation
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 3 }}>
+          <Typography variant="body1" gutterBottom>
+            You are about to request <strong>cancellation of your account deletion</strong>.
+          </Typography>
+          <Typography variant="body2" color="black" fontWeight="bold">
+            The admin will review your cancellation request. Once approved, your account deletion will be cancelled. You'll retain all your data and access and will be notified once the cancellation is processed via email.  
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+          <Button
+            onClick={() => setCancelModalOpen(false)}
+            disabled={submittingCancel}
+            sx={{ borderRadius: 50, px: 3 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleCancleDeletion}
+            disabled={submittingDeletion}
+            sx={{ borderRadius: 50, px: 4 }}
+          >
+            {submittingCancel ? 'Submitting...' : 'Yes, Cancel Deletion'}
           </Button>
         </DialogActions>
       </Dialog>
